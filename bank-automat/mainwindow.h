@@ -20,7 +20,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    //käytettään aloitusruudun näyttämiseen
+    //käytetään aloitusruudun näyttämiseen
     QTimer *splashTimer;
     bool isSplashScreen;
     //näyttää tai piilottaa pääruudun tekstit ja napit
