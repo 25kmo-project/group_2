@@ -17,4 +17,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+// 404 – jos mikään reitti ei osunut
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
+  err.statusCode = 404;
+  next(err);
+});
+
+const { errorHandler } = require('./middleware/errorHandler');
+app.use(errorHandler);
+
 module.exports = app;
