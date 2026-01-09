@@ -56,13 +56,13 @@ void MainWindow::paintEvent(QPaintEvent *event)
     
     if (isSplashScreen) {
         // Näytä aloitusruudun tausta
-        QPixmap splashPix(":/images/background.png");
+        static const QPixmap splashPix(":/images/background.png");
         painter.drawPixmap(rect(), splashPix);
         //testaus voi poistaa myöhemmin
         qDebug() << "Piirretään aloitusruutu";
     } else {
         // Näytä pääruudun tausta
-        QPixmap mainPix(":/images/backgroundLogin.png");
+        static const QPixmap mainPix(":/images/backgroundLogin.png");
         painter.drawPixmap(rect(), mainPix);
         //testaus voi poistaa myöhemmin
         qDebug() << "Piirretään pääruutu";
