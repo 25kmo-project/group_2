@@ -94,7 +94,7 @@
      </widget>
     </item>
     <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="userl">
+     <widget class="QLabel" name="userLabel">
       <property name="maximumSize">
        <size>
         <width>142</width>
