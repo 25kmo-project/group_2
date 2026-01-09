@@ -1,3 +1,5 @@
+// Tämä tiedosto kokoaa Express-sovelluksen: middlewaret, reitit ja virheenkäsittelyn
+
 // Riippuvuuksien tuonti
 var express = require('express');
 var path = require('path');

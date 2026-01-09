@@ -1,3 +1,5 @@
+// Tämä tiedosto on backendin keskitetty virheenkäsittelijä
+
 // Tämä on Express error-handling middleware
 function errorHandler(err, req, res, next) {
     // Tässä päätetään HTTP-statuskoodi
