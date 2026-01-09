@@ -56,7 +56,7 @@
      </spacer>
     </item>
     <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="login">
+     <widget class="QLabel" name="welcomeLabel">
       <property name="minimumSize">
        <size>
         <width>0</width>
