@@ -58,14 +58,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
         // Näytä aloitusruudun tausta
         static const QPixmap splashPix(":/images/background.png");
         painter.drawPixmap(rect(), splashPix);
-        //testaus voi poistaa myöhemmin
-        qDebug() << "Piirretään aloitusruutu";
     } else {
         // Näytä pääruudun tausta
-        static const QPixmap mainPix(":/images/backgroundLogin.png");
+        QPixmap mainPix(":/images/backgroundLogin.png");
         painter.drawPixmap(rect(), mainPix);
-        //testaus voi poistaa myöhemmin
-        qDebug() << "Piirretään pääruutu";
     }
 }
 
