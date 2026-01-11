@@ -3,5 +3,7 @@
     <qresource prefix="/">
         <file>images/background.png</file>
         <file>images/backgroundLogin.png</file>
+        <file>images/silmaa.svg</file>
+        <file>images/silmak.svg</file>
     </qresource>
 </RCC>

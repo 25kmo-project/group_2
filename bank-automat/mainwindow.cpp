@@ -4,6 +4,9 @@
 #include <QDebug>
 #include <QPainter>
 #include <QPixmap>
+#include <QAction>
+#include <QStyle>
+#include <QLineEdit>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -12,16 +15,33 @@ MainWindow::MainWindow(QWidget *parent)
     , isSplashScreen(true)
 {
     ui->setupUi(this);
+
+    // Lisää salasanakentälle näytä/piilota nappi
+    QIcon showIcon(":/images/silmaa.svg");
+    QIcon hideIcon(":/images/silmak.svg");
+
+    QAction* toggleAction = ui->password->addAction(showIcon, QLineEdit::TrailingPosition);
+    toggleAction->setCheckable(true);
+
+    connect(toggleAction, &QAction::toggled, [this, toggleAction, showIcon, hideIcon](bool checked) {
+        if (checked) {
+            ui->password->setEchoMode(QLineEdit::Normal);
+            toggleAction->setIcon(hideIcon);
+        } else {
+            ui->password->setEchoMode(QLineEdit::Password);
+            toggleAction->setIcon(showIcon);
+        }
+    });
+
+    //piilota pääruudun tekstit ja napit aluksi
     setMainControlsVisible(false);
-    
-    //testaus voi poistaa myöhemmin
-    const bool exists = QFile(":/images/background.png").exists();
-    qDebug() << "Resource :/images/background.png exists?" << exists;
     
     // ajastin alku logolle
     splashTimer = new QTimer(this);
     connect(splashTimer, &QTimer::timeout, this, &MainWindow::showMainScreen);
     splashTimer->start(3000); 
+
+
 }
 
 MainWindow::~MainWindow()
