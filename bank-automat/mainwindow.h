@@ -20,14 +20,21 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    
     //käytetään aloitusruudun näyttämiseen
     QTimer *splashTimer;
     bool isSplashScreen;
+
     //näyttää tai piilottaa pääruudun tekstit ja napit
     void setMainControlsVisible(bool visible);
 
+    //testi tunnukset
+    const QString VALID_USERNAME = "user";
+    const QString VALID_PASSWORD = "pass";
+
 private slots:
     void showMainScreen();
+    void on_KirjauduButton_clicked();
 
 protected:
     void paintEvent(QPaintEvent *event) override;

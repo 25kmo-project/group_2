@@ -3,7 +3,7 @@ project(bank-automat LANGUAGES CXX)
 
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg)
 
 qt_standard_project_setup()
 
@@ -20,6 +20,7 @@ target_link_libraries(bank-automat
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt::Svg
 )
 
 include(GNUInstallDirs)
