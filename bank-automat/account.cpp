@@ -11,6 +11,11 @@ account::account(QString cardnumber, QString cardtype,QWidget *parent)
 {
     ui->setupUi(this);
     ui->stackedAccount->setCurrentWidget(ui->screenLogin);
+    ui->labelLoginCardnumber->setText(cardnumber);
+    ui->labelLoginCardnumber->setStyleSheet(
+        "font-size: 18pt;"
+        "qproperty-alignment: 'AlignCenter';"
+        );
 }
 
 account::~account()
