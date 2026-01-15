@@ -89,7 +89,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void MainWindow::on_KirjauduButton_clicked()
 {
-    QString username = ui->user->text().trimmed();
+    username = ui->user->text().trimmed();
     QString password = ui->password->text();
 
     // Testaa kovakoodatut tunnukset
@@ -105,7 +105,7 @@ void MainWindow::on_KirjauduButton_clicked()
         selectTimer = new QTimer(this);
         connect(selectTimer, &QTimer::timeout, this, &MainWindow::openSelectWindow);
         selectTimer->setSingleShot(true);   //avaa vain kerran
-        selectTimer->start(1500);
+        selectTimer->start(1000);
     } else {
         ui->welcomeLabel->setText("Virheellinen käyttäjätunnus tai salasana!");
         ui->welcomeLabel->setStyleSheet("QLabel { color: red; font-size: 16px; }");
@@ -119,6 +119,10 @@ void MainWindow::on_KirjauduButton_clicked()
 //tilinvalintaruudun avaaminen
 void MainWindow::openSelectWindow()
 {
-    accountSelectWindow = new accountselect;
-    accountSelectWindow->show();
+    accountSelectWindow = new accountselect(username, nullptr);
+    //nulpptr niin voidaan mainwindow sammuttaa ja accountselect säilyy
+    accountSelectWindow->setAttribute(Qt::WA_DeleteOnClose);
+    //Lisätään että muisti vapautetaan oikein suljettaessa, koska nullptr käytössä
+    accountSelectWindow->showMaximized();
+    this->close();      //suljetaan mainWindow
 }

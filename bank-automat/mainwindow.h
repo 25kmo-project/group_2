@@ -26,9 +26,10 @@ private:
     QTimer *splashTimer;
     bool isSplashScreen;
 
-    //select ruudulle siirtymisen timer
+    //select ruudulle siirtymisen timer ja username
     QTimer *selectTimer;
     accountselect *accountSelectWindow;
+    QString username;
 
     //näyttää tai piilottaa pääruudun tekstit ja napit
     void setMainControlsVisible(bool visible);
@@ -40,7 +41,7 @@ private:
 private slots:
     void showMainScreen();
     void on_KirjauduButton_clicked();
-    void openSelectWindow();
+    void openSelectWindow();    //QString username
 
 protected:
     void paintEvent(QPaintEvent *event) override;

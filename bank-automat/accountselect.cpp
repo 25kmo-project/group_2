@@ -4,11 +4,13 @@
 #include <QPixmap>
 
 
-accountselect::accountselect(QWidget *parent)
+accountselect::accountselect(QString message, QWidget *parent)
     : QDialog(parent)
-    , ui(new Ui::accountselect)
+    , ui(new Ui::accountselect),
+    cardnumber(message)
 {
     ui->setupUi(this);
+    ui->labelTest->setText(cardnumber);
 }
 
 accountselect::~accountselect()
