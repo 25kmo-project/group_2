@@ -18,7 +18,7 @@
 
 ### Database
 
-Suorita seed virtuaalikoneella:
+Suorita seed virtuaalikoneella:<br>
 mysql -u käyttäjä -p bank_db < seed.sql
 
 ## widget
