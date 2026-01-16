@@ -34,14 +34,14 @@ CALL sp_create_user(iduser, fname, lname,streetaddress);
 ```sql
 -- Lukitsee kortin ID:n perusteella
 CALL sp_card_lock(idcard);
--- Esimerkki: CALL sp_card_lock(1);
+-- Esimerkki: CALL sp_card_lock('CARD123456');
 ```
 
 **Kortin lukituksen poisto**
 ```sql
 -- Poistaa kortin lukituksen ID:n perusteella
 CALL sp_card_unlock(idcard);
--- Esimerkki: CALL sp_card_unlock(1);
+-- Esimerkki: CALL sp_card_unlock('CARD123456');
 ```
 
 #### Tilin transaktiot
