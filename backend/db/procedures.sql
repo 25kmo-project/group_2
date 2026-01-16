@@ -367,20 +367,32 @@ CREATE PROCEDURE sp_delete_user(
   IN p_iduser VARCHAR(45)
 )
 BEGIN
-  DECLARE v_count INT;
+  DECLARE v_user_count INT;
+  DECLARE v_account_count INT;
 
   START TRANSACTION;
 
   -- Check if user exists
-  SELECT COUNT(*) INTO v_count
+  SELECT COUNT(*) INTO v_user_count
   FROM users
   WHERE iduser = p_iduser
   FOR UPDATE;
 
-  IF v_count = 0 THEN
+  IF v_user_count = 0 THEN
     ROLLBACK;
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'User not found';
+  END IF;
+
+  -- Check if user has accounts
+  SELECT COUNT(*) INTO v_account_count
+  FROM accounts
+  WHERE iduser = p_iduser;
+
+  IF v_account_count > 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Cannot delete user with existing accounts. Delete accounts first.';
   END IF;
 
   -- Delete user
@@ -391,5 +403,119 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- DELETE ACCOUNT
+-- example CALL sp_delete_account(idaccount);
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_account(
+  IN p_idaccount INT
+)
+BEGIN
+  DECLARE v_account_count INT;
+  DECLARE v_card_count INT;
+
+  START TRANSACTION; 
+
+  -- Check if account exists
+  SELECT COUNT(*) INTO v_account_count
+  FROM accounts
+  WHERE idaccount = p_idaccount
+  FOR UPDATE;
+
+  IF v_account_count = 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Account not found';
+  END IF;
+
+  -- Check if account has cards
+  SELECT COUNT(*) INTO v_card_count
+  FROM cards
+  WHERE idaccount = p_idaccount;
+
+  IF v_card_count > 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Cannot delete account with existing cards. Delete cards first.';
+  END IF;
+
+  -- Delete log entries first
+  DELETE FROM log
+  WHERE idaccount = p_idaccount;
+
+  -- Delete account
+  DELETE FROM accounts
+  WHERE idaccount = p_idaccount;
+
+  COMMIT;
+END$$
+DELIMITER ;
+
+-- DELETE CARD
+-- example CALL sp_delete_card(idcard);
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_card(
+  IN p_idcard VARCHAR(45)
+)
+BEGIN
+  DECLARE v_card_count INT;
+
+  START TRANSACTION;
+
+  -- Check if card exists
+  SELECT COUNT(*) INTO v_card_count
+  FROM cards
+  WHERE idcard = p_idcard
+  FOR UPDATE;
+
+  IF v_card_count = 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Card not found';
+  END IF;
+
+  -- Delete card
+  DELETE FROM cards
+  WHERE idcard = p_idcard;
+  COMMIT;
+END$$
+DELIMITER ;
+
+-- ADD ACCOUNT
+-- example CALL sp_add_account(iduser, balance, credit_limit);
+
+DELIMITER $$
+CREATE PROCEDURE sp_add_account(
+  IN p_iduser VARCHAR(45),
+  IN p_balance DECIMAL(10,2),
+  IN p_creditlimit DECIMAL(10,2)
+)
+BEGIN
+  DECLARE v_user_count INT;
+
+  START TRANSACTION;
+
+  -- Check if user exists
+  SELECT COUNT(*) INTO v_user_count
+  FROM users
+  WHERE iduser = p_iduser
+  FOR UPDATE;
+
+  IF v_user_count = 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'User not found';
+  END IF;
+
+  -- Insert new account
+  INSERT INTO accounts (iduser, balance, credit_limit)
+  VALUES (p_iduser, p_balance, p_creditlimit);
+
+  COMMIT;
+END$$
+DELIMITER ;
 
 -- END PROCEDURES

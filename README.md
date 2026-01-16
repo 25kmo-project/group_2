@@ -29,12 +29,33 @@ CALL sp_create_user(iduser, fname, lname, streetaddress);
 
 **Käyttäjän poisto**
 ```sql
--- Poistaa käyttäjän
+-- Poistaa käyttäjän (käyttäjällä ei saa olla tilejä)
 CALL sp_delete_user(iduser);
 -- Esimerkki: CALL sp_delete_user('user123');
 ```
 
+**Tilin lisäys**
+```sql
+-- Lisää uuden tilin käyttäjälle
+CALL sp_add_account(iduser, balance, credit_limit);
+-- Esimerkki: CALL sp_add_account('user123', 1000.00, 500.00);
+```
+
+**Tilin poisto**
+```sql
+-- Poistaa tilin (tilillä ei saa olla kortteja, logit poistetaan automaattisesti)
+CALL sp_delete_account(idaccount);
+-- Esimerkki: CALL sp_delete_account(1);
+```
+
 #### Korttien hallinta
+
+**Kortin poisto**
+```sql
+-- Poistaa kortin
+CALL sp_delete_card(idcard);
+-- Esimerkki: CALL sp_delete_card('CARD123456');
+```
 
 
 **Kortin lukitseminen**
