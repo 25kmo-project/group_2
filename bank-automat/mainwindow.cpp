@@ -1,13 +1,12 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include <QFile>
+#include <QAction>
 #include <QDebug>
+#include <QFile>
+#include <QLineEdit>
 #include <QPainter>
 #include <QPixmap>
-#include <QAction>
 #include <QStyle>
-#include <QLineEdit>
-
+#include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -24,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     QIcon showIcon(":/images/silmaa.svg");
     QIcon hideIcon(":/images/silmak.svg");
 
-    QAction* toggleAction = ui->password->addAction(showIcon, QLineEdit::TrailingPosition);
+    QAction *toggleAction = ui->password->addAction(showIcon, QLineEdit::TrailingPosition);
     toggleAction->setCheckable(true);
 
     connect(toggleAction, &QAction::toggled, [this, toggleAction, showIcon, hideIcon](bool checked) {
@@ -39,13 +38,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     //piilota pääruudun tekstit ja napit aluksi
     setMainControlsVisible(false);
-    
+
     // ajastin alku logolle
     splashTimer = new QTimer(this);
     connect(splashTimer, &QTimer::timeout, this, &MainWindow::showMainScreen);
-    splashTimer->start(3000); 
-
-
+    splashTimer->start(3000);
 }
 
 MainWindow::~MainWindow()
@@ -59,14 +56,15 @@ void MainWindow::showMainScreen()
     splashTimer->stop();
     //näyttää login ruudun labelit ja napit ja siirtää kursorin käyttäjä kenttään
     setMainControlsVisible(true);
-     ui->user->setFocus();
+    ui->user->setFocus();
     // Päivittää näkymän
     update();
 }
 
 void MainWindow::setMainControlsVisible(bool visible)
 {
-    const auto controls = ui->centralwidget->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
+    const auto controls = ui->centralwidget->findChildren<QWidget *>(QString(),
+                                                                     Qt::FindDirectChildrenOnly);
     for (QWidget *w : controls) {
         w->setVisible(visible);
     }
@@ -76,7 +74,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     QPainter painter(this);
-    
+
     if (isSplashScreen) {
         // Näytä aloitusruudun tausta
         static const QPixmap splashPix(":/images/background.png");
@@ -86,28 +84,45 @@ void MainWindow::paintEvent(QPaintEvent *event)
         // Näytä pääruudun tausta
         static const QPixmap mainPix(":/images/backgroundLogin.png");
         painter.drawPixmap(rect(), mainPix);
-
     }
 }
 
 void MainWindow::on_KirjauduButton_clicked()
 {
-    QString username = ui->user->text().trimmed();
+    username = ui->user->text().trimmed();
     QString password = ui->password->text();
 
     // Testaa kovakoodatut tunnukset
     if (username == VALID_USERNAME && password == VALID_PASSWORD) {
-        
         ui->welcomeLabel->setText("Kirjautuminen onnistui!");
         ui->welcomeLabel->setStyleSheet("QLabel { color: green; font-size: 16px; }");
-        ui->welcomeLabel->setWordWrap(true); 
-        ui->welcomeLabel->adjustSize();  
+        ui->welcomeLabel->setWordWrap(true);
+        ui->welcomeLabel->adjustSize();
+
+        //Jos vain debit niin tähän logiikka suoraan tilinhallintaan ilman tilinvalintaa?
+
+        //avaa pienen viiveen jälkeen tilinvalintaruudun
+        selectTimer = new QTimer(this);
+        connect(selectTimer, &QTimer::timeout, this, &MainWindow::openSelectWindow);
+        selectTimer->setSingleShot(true);   //avaa vain kerran
+        selectTimer->start(1000);
     } else {
         ui->welcomeLabel->setText("Virheellinen käyttäjätunnus tai salasana!");
         ui->welcomeLabel->setStyleSheet("QLabel { color: red; font-size: 16px; }");
         ui->welcomeLabel->setWordWrap(true);
-        ui->welcomeLabel->adjustSize();  
+        ui->welcomeLabel->adjustSize();
         ui->password->clear();
         ui->password->setFocus();
     }
+}
+
+//tilinvalintaruudun avaaminen
+void MainWindow::openSelectWindow()
+{
+    accountSelectWindow = new accountselect(username, nullptr);
+    //nulpptr niin voidaan mainwindow sammuttaa ja accountselect säilyy
+    accountSelectWindow->setAttribute(Qt::WA_DeleteOnClose);
+    //Lisätään että muisti vapautetaan oikein suljettaessa, koska nullptr käytössä
+    accountSelectWindow->showMaximized();
+    this->close();      //suljetaan mainWindow
 }
