@@ -52,7 +52,7 @@ CALL sp_delete_account(idaccount);
 
 **Kortin linkitys tiliin**
 ```sql
--- Linkittää kortin tiliin (kortti voi olla linkitetty vain yhteen tiliin)
+-- Linkittää kortin tiliin
 CALL sp_card_to_account(idcard, idaccount);
 -- Esimerkki: CALL sp_card_to_account('CARD123456', 1);
 ```

@@ -606,18 +606,16 @@ BEGIN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Account not found';
   END IF;
-
-  -- Check if card is already linked to any account
+  -- Check if link already exists
   SELECT COUNT(*) INTO v_link_exists
   FROM accounts_cards
-  WHERE idcard = p_idcard;
-
+  WHERE idcard = p_idcard AND idaccount = p_idaccount;
   IF v_link_exists > 0 THEN
     ROLLBACK;
     SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Card is already linked to another account';
+      SET MESSAGE_TEXT = 'Card is already linked to this account';
   END IF;
-
+  
   -- Link card to account
   INSERT INTO accounts_cards (idcard, idaccount)
   VALUES (p_idcard, p_idaccount);
