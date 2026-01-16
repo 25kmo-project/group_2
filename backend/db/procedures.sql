@@ -276,7 +276,7 @@ DELIMITER ;
 DELIMITER $$
 
 CREATE PROCEDURE sp_card_lock(
-  IN p_idcard INT
+  IN p_idcard VARCHAR(45)
 )
 BEGIN
 
@@ -284,7 +284,7 @@ BEGIN
 
   -- Locks card 
   UPDATE cards
-  SET islocked = 1
+  SET is_locked = 1
   WHERE idcard = p_idcard;
 
   IF ROW_COUNT() = 0 THEN
@@ -302,7 +302,7 @@ DELIMITER ;
 DELIMITER $$
 
 CREATE PROCEDURE sp_card_unlock(
-  IN p_idcard INT
+  IN p_idcard VARCHAR(45)
 )
 BEGIN
 
@@ -310,7 +310,7 @@ BEGIN
 
   -- unlock card 
   UPDATE cards
-  SET islocked = 0
+  SET is_locked = 0
   WHERE idcard = p_idcard;
 
   IF ROW_COUNT() = 0 THEN
