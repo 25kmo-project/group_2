@@ -82,6 +82,10 @@ CALL sp_credit_withdraw(idaccount, amount);
 CALL sp_credit_repay(idaccount, amount);
 -- Esimerkki: CALL sp_credit_repay(1, 150.00);
 ```
+### Database
+
+Suorita seed virtuaalikoneella:
+mysql -u käyttäjä -p bank_db < seed.sql
 
 ## widget
 
