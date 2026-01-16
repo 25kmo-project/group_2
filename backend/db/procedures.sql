@@ -400,7 +400,7 @@ BEGIN
   WHERE iduser = p_iduser;
 
   COMMIT;
-END$$
+END $$
 DELIMITER ;
 
 -- DELETE ACCOUNT
