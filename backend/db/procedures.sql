@@ -335,19 +335,59 @@ CREATE PROCEDURE sp_create_user(
   IN p_streetaddress VARCHAR(45)
 )
 BEGIN
+  DECLARE v_exists INT;
 
-DECLARE v_exists INT;
+  START TRANSACTION;
 
-SELECT COUNT(*) INTO v_exists 
-FROM users WHERE iduser = p_iduser;
+  -- Check if user already exists with lock
+  SELECT COUNT(*) INTO v_exists 
+  FROM users WHERE iduser = p_iduser
+  FOR UPDATE;
 
-IF v_exists > 0 THEN
-  SIGNAL SQLSTATE '45000'
-     SET MESSAGE_TEXT = 'User already exists';
-END IF;
+  IF v_exists > 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'User already exists';
+  END IF;
 
+  -- Insert new user
   INSERT INTO users (iduser, fname, lname, streetaddress)
   VALUES (p_iduser, p_fname, p_lname, p_streetaddress);
+
+  COMMIT;
+END$$
+DELIMITER ;
+
+-- DELETE USER
+-- example CALL sp_delete_user(iduser);
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_user(
+  IN p_iduser VARCHAR(45)
+)
+BEGIN
+  DECLARE v_count INT;
+
+  START TRANSACTION;
+
+  -- Check if user exists
+  SELECT COUNT(*) INTO v_count
+  FROM users
+  WHERE iduser = p_iduser
+  FOR UPDATE;
+
+  IF v_count = 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'User not found';
+  END IF;
+
+  -- Delete user
+  DELETE FROM users
+  WHERE iduser = p_iduser;
+
+  COMMIT;
 END$$
 DELIMITER ;
 

@@ -22,9 +22,16 @@
 
 **Käyttäjän lisäys**
 ```sql
--- Lisää käyttäjän
-CALL sp_create_user(iduser, fname, lname,streetaddress);
--- Esimerkki: CALL sp_create_user('user123','matti', 'meikalainen','meikatie 1');
+-- Lisää uuden käyttäjän
+CALL sp_create_user(iduser, fname, lname, streetaddress);
+-- Esimerkki: CALL sp_create_user('user123', 'matti', 'meikalainen', 'meikatie 1');
+```
+
+**Käyttäjän poisto**
+```sql
+-- Poistaa käyttäjän
+CALL sp_delete_user(iduser);
+-- Esimerkki: CALL sp_delete_user('user123');
 ```
 
 #### Korttien hallinta
