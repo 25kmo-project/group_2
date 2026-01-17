@@ -11,6 +11,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var accountsRouter = require('./routes/accounts');
 var cardsRouter = require('./routes/cards');
+var accountsCardsRouter = require('./routes/accountsCards');
 
 // Express-sovelluksen tuonti
 var app = express();
@@ -28,6 +29,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/accounts', accountsRouter);
 app.use('/cards', cardsRouter);
+app.use('/accounts-cards', accountsCardsRouter);
 
 // 404-handler
 app.use((req, res, next) => {
