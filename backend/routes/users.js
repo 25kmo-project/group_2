@@ -1,4 +1,4 @@
-// Tämä tiedosto on Express-reititin users-resurssille. Se yhdistää HTTP-endpointit -> usersControllerin funktioihin
+// Tämä tiedosto on Express-reititin users-resurssille
 
 // Express ja router
 const express = require('express');
@@ -8,10 +8,10 @@ const router = express.Router();
 const { getUserById, createUser, updateUser, deleteUser } = require('../controllers/usersController');
 
 // Reittien määrittely
-router.get('/:idUser', getUserById); // READ - GET
-router.post('/', createUser); // CREATE - POST
-router.put('/:idUser', updateUser); // UPDATE - PUT
-router.delete('/:idUser', deleteUser); // DELETE - DELETE
+router.get('/:idUser', getUserById); // READ - hakee käyttäjän
+router.post('/', createUser); // CREATE - tekee käyttäjän
+router.put('/:idUser', updateUser); // UPDATE - päivittää käyttäjän tiedot
+router.delete('/:idUser', deleteUser); // DELETE - poistaa käyttäjän
 
 // Routerin export
 module.exports = router;
