@@ -1,11 +1,10 @@
-// Tämä tiedosto on usersControllers, joka on Express-controlleri. Toteuttaa users CRUD-endpointtien toiminnan.
-// Käyttää proseduureja, paitsi "read" ja "update" osalta. Nämä päivitetään tänne, kunhan ne on tehty procedures.sql -tiedostoon.
+// Tämä tiedosto on usersController, täysin proseduuripohjainen versio
 
 // Importit
 const AppError = require('../middleware/AppError');
 const pool = require('../db');
 
-// Muuntaa DB:n sarakenimet API:n JSON-muotoon
+// Muuntaa tietokantarivien kentät API-muotoon
 function mapUserRow(row) {
     return {
         idUser: row.iduser,
@@ -15,47 +14,61 @@ function mapUserRow(row) {
     };
 }
 
-// Hakee id:n URL-parametreista kahdella vaihtoehtoisella nimellä
+// Hakee käyttäjän-id:n URL:stä joustavasti
 function getIdParam(req) {
     return req.params?.idUser ?? req.params?.id;
 }
 
-// Yrittää tulkita proseduurin SIGNAL-virheet ja muuntaa ne HTTP-statuksiksi
+// Tämä on virhekääntäjä
 function mapProcedureSignalToHttp(err) {
-    const msg = (err?.sqlMessage || err?.message || '').toLowerCase();
+    const raw = err?.sqlMessage || err?.message || '';
+    const msg = raw.toLowerCase();
     
-    if (msg.includes('already exists')) return new AppError('Customer already exists', 409);
-    if (msg.includes('not found')) return new AppError('Customer not found', 404);
-    if (msg.includes('cannot delete')) return new AppError('Customer cannot be deleted because it has related data', 409);
-    if (err?.code === 'ER_SIGNAL_EXCEPTION') return new AppError(err.sqlMessage || 'Bad Request', 400);
+    if (msg.includes('user not found')) return new AppError('Customer not found', 404);
+    
+    if (msg.includes('user already exists')) return new AppError('Customer already exists', 409);
+    
+    if (msg.includes('cannot delete user with existing')) {
+        return new AppError('Customer cannot be deleted because it has related data', 409);
+    }
+    
+    if (
+        msg.includes('cannot be null') ||
+        msg.includes('cannot be null or empty') ||
+        msg.includes('must be greater than') ||
+        msg.includes('invalid')
+    ) {
+        return new AppError(raw, 400);
+    }
+    
+    if (err?.code === 'ER_SIGNAL_EXCEPTION') return new AppError(raw || 'Bad Request', 400);
     
     return null;
 }
 
 // getUserById
-// Ottaa id:n URL:sta, ajaa SELECT. Jos ei löydy -> 404, muuten palauttaa käyttäjän JSON:na
-// Huom: sitten kun procedures.sql sisältää "read" proseduurin, tämä päivitetään käyttämään sitä
+// Tämä hakee käyttäjän proseduurilla
 async function getUserById(req, res, next) {
     try {
         const idUser = getIdParam(req);
         if (!idUser) throw new AppError('idUser is required', 400);
         
-        const [rows] = await pool.execute(
-            'SELECT iduser, fname, lname, streetaddress FROM users WHERE iduser = ?',
-            [idUser]
-        );
+        // Proseduurin haku
+        const [resultSets] = await pool.execute('CALL sp_read_user_info(?)', [idUser]);
+        const rows = resultSets?.[0] ?? [];
         
-        if (rows.length === 0) throw new AppError('Customer not found', 404);
+        if (!rows.length) throw new AppError('Customer not found', 404);
         
         res.status(200).json(mapUserRow(rows[0]));
     } catch (err) {
+        const mapped = mapProcedureSignalToHttp(err);
+        if (mapped) return next(mapped);
         next(err);
     }
 }
 
 // createUser
-// Validoi bodyn
-// Käyttää proseduuria "sp_create_user"
+// Luo käyttäjän proseduurilla
 async function createUser(req, res, next) {
     try {
         const { idUser, firstName, lastName, streetAddress } = req.body ?? {};
@@ -64,7 +77,7 @@ async function createUser(req, res, next) {
             throw new AppError('firstName, lastName and streetAddress are required', 400);
         }
         
-        // Kutsuu proseduuria
+        // Proseduurin haku
         await pool.execute('CALL sp_create_user(?, ?, ?, ?)', [
             idUser,
             firstName,
@@ -84,8 +97,7 @@ async function createUser(req, res, next) {
 }
 
 // updateUser
-// Validoi id:n + bodyn
-// Huom: sitten kun procedures.sql sisältää "update" proseduurin, tämä päivitetään käyttämään sitä
+// Päivittää käyttäjän proseduurilla
 async function updateUser(req, res, next) {
     try {
         const idUser = getIdParam(req);
@@ -96,28 +108,30 @@ async function updateUser(req, res, next) {
             throw new AppError('firstName, lastName and streetAddress are required', 400);
         }
         
-        const [result] = await pool.execute(
-            'UPDATE users SET fname = ?, lname = ?, streetaddress = ? WHERE iduser = ?',
-            [firstName, lastName, streetAddress, idUser]
-        );
-        
-        if (result.affectedRows === 0) throw new AppError('Customer not found', 404);
+        // Proseduurin haku
+        await pool.execute('CALL sp_update_user_info(?, ?, ?, ?)', [
+            idUser,
+            firstName,
+            lastName,
+            streetAddress,
+        ]);
         
         res.status(200).json({ idUser, firstName, lastName, streetAddress });
     } catch (err) {
+        const mapped = mapProcedureSignalToHttp(err);
+        if (mapped) return next(mapped);
         next(err);
     }
 }
 
 // deleteUser
-// Validoi id:n
-// Käyttää proseduuria "sp_delete_user"
+// Poistaa käyttäjän proseduurilla
 async function deleteUser(req, res, next) {
     try {
         const idUser = getIdParam(req);
         if (!idUser) throw new AppError('idUser is required', 400);
         
-        // Kutsuu proseduuria
+        // Proseduurin haku
         await pool.execute('CALL sp_delete_user(?)', [idUser]);
         
         res.status(204).end();
@@ -126,12 +140,12 @@ async function deleteUser(req, res, next) {
         if (mapped) return next(mapped);
         
         if (err?.code === 'ER_ROW_IS_REFERENCED_2') {
-            return next(new AppError('Customer cannot be deleted because it has accounts', 409));
+            return next(new AppError('Customer cannot be deleted because it has related data', 409));
         }
         
         next(err);
     }
 }
 
-// Näitä käytetään reitittimessä
+// Export
 module.exports = { getUserById, createUser, updateUser, deleteUser };
