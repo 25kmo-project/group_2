@@ -3,7 +3,7 @@
 ## 0. Metatiedot
 - **Nimi:** Bank-ATM REST API
 - **Versio:** v0
-- **Base URL:** `/api/v0`
+- **Base URL:** `localhost:3000`
 - **Content-Type:** `application/json; charset=utf-8`
 - **Auth:** JWT (`Authorization: Bearer <token>`)
 - **Virhevastauksen muoto (yhtenäinen):**
