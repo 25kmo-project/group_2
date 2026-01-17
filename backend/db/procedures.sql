@@ -624,4 +624,92 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- READ USER INFO
+-- example CALL sp_read_user_info(iduser);
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_read_user_info(
+  IN p_iduser VARCHAR(45)
+)
+BEGIN 
+  DECLARE v_user_count INT;
+
+  -- Validate parameter
+  IF p_iduser IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User ID cannot be NULL';
+  END IF;
+
+  -- Check if user exists
+  SELECT COUNT(*) INTO v_user_count
+  FROM users
+  WHERE iduser = p_iduser;
+
+  IF v_user_count = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User not found';
+  END IF;
+
+  -- Retrieve user info
+  SELECT iduser, fname, lname, streetaddress
+  FROM users
+  WHERE iduser = p_iduser;
+END$$
+DELIMITER ;
+
+-- UPDATE USER INFO
+-- example CALL sp_update_user_info(iduser, fname, lname, streetaddress);
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_update_user_info(
+  IN p_iduser VARCHAR(45),
+  IN p_fname VARCHAR(45),
+  IN p_lname VARCHAR(45),
+  IN p_streetaddress VARCHAR(45)
+)
+BEGIN
+  DECLARE v_user_count INT;
+
+  -- Validate parameters
+  IF p_iduser IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User ID cannot be NULL';
+  END IF;
+
+  IF p_fname IS NULL OR TRIM(p_fname) = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'First name cannot be NULL or empty';
+  END IF;
+
+  IF p_lname IS NULL OR TRIM(p_lname) = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Last name cannot be NULL or empty';
+  END IF;
+
+  IF p_streetaddress IS NULL OR TRIM(p_streetaddress) = '' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Street address cannot be NULL or empty';
+  END IF;
+
+  START TRANSACTION;
+
+  -- Check if user exists with lock
+  SELECT COUNT(*) INTO v_user_count
+  FROM users
+  WHERE iduser = p_iduser
+  FOR UPDATE;
+
+  IF v_user_count = 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'User not found';
+  END IF;
+
+  -- Update user information
+  UPDATE users
+  SET fname = p_fname,
+      lname = p_lname,
+      streetaddress = p_streetaddress
+  WHERE iduser = p_iduser;
+
+  COMMIT;
+END$$
+DELIMITER ;
+
 -- END PROCEDURES

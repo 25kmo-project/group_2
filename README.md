@@ -38,6 +38,20 @@ CALL sp_delete_user(iduser);
 -- Esimerkki: CALL sp_delete_user('user123');
 ```
 
+**Käyttäjätietojen lukeminen**
+```sql
+-- Hakee käyttäjän tiedot
+CALL sp_read_user_info(iduser);
+-- Esimerkki: CALL sp_read_user_info('user123');
+```
+
+**Käyttäjätietojen päivittäminen**
+```sql
+-- Päivittää käyttäjän tiedot
+CALL sp_update_user_info(iduser, fname, lname, streetaddress);
+-- Esimerkki: CALL sp_update_user_info('user123', 'Maija', 'Meikäläinen', 'Uusitie 2');
+```
+
 **Tilin lisäys**
 ```sql
 -- Lisää uuden tilin käyttäjälle
