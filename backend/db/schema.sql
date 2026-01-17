@@ -17,7 +17,7 @@
 
 --
 -- Table structure for table `accounts`
--- HUOM: Tämä tiedosto olettaa, että olet jo tehnyt tietokannan bank_db ja käytät sitä
+--
 
 DROP TABLE IF EXISTS `accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -30,7 +30,7 @@ CREATE TABLE `accounts` (
   PRIMARY KEY (`idaccount`),
   KEY `fk_accounts_users1_idx` (`iduser`),
   CONSTRAINT `fk_accounts_users1` FOREIGN KEY (`iduser`) REFERENCES `users` (`iduser`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -61,6 +61,7 @@ CREATE TABLE `cards` (
   `idcard` varchar(45) NOT NULL,
   `cardPIN` varchar(255) DEFAULT NULL,
   `iduser` varchar(45) NOT NULL,
+  `is_locked` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`idcard`),
   KEY `fk_card_users1_idx` (`iduser`),
   CONSTRAINT `fk_card_users1` FOREIGN KEY (`iduser`) REFERENCES `users` (`iduser`)
@@ -82,7 +83,7 @@ CREATE TABLE `log` (
   PRIMARY KEY (`idlog`),
   KEY `fk_log_accounts1_idx` (`idaccount`),
   CONSTRAINT `fk_log_accounts1` FOREIGN KEY (`idaccount`) REFERENCES `accounts` (`idaccount`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -110,4 +111,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-13 18:02:08
+-- Dump completed on 2026-01-16 11:30:07

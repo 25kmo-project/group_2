@@ -16,6 +16,10 @@
 | Duplikaatti (esim. kortti jo olemassa) | **409 Conflict**              |
 | Odottamaton virhe                      | **500 Internal Server Error** |
 
+### Database
+
+Suorita seed virtuaalikoneella:<br>
+mysql -u käyttäjä -p bank_db < seed.sql
 ### Tietokanta proseduurit
 
 #### Tietokannan hallinta
