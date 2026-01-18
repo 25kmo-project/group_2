@@ -6,6 +6,8 @@
 //Tarvitaan hard resettiin:
 #include <QProcess>
 #include <QCoreApplication>
+#include <QTimer>
+#include "logs.h"
 
 namespace Ui {
 class account;
@@ -28,7 +30,8 @@ private:
     double creditlimit = 1000;
     double nostosumma;
 
-    QStandardItemModel *tapahtumat;
+    QStandardItemModel *tapahtumat = nullptr;
+    class logs *ptr_logs;
 
     QByteArray testData;
 
@@ -50,6 +53,7 @@ private slots:
     void on_btnNosta100_clicked();
     void on_btnNostaMuu_clicked();
     void on_btnTakaisinNostaValitse_clicked();
+
 };
 
 #endif // ACCOUNT_H

@@ -1,7 +1,6 @@
 #ifndef LOGEVENTS_H
 #define LOGEVENTS_H
 
-#include <qobject.h>
 #include <QString>
 #include <QJsonObject>
 
