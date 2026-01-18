@@ -54,6 +54,8 @@ private slots:
     void on_btnNostaMuu_clicked();
     void on_btnTakaisinNostaValitse_clicked();
 
+    void on_btnTapahtumatVasen_clicked();
+    void on_btnTapahtumatOikea_clicked();
 };
 
 #endif // ACCOUNT_H

@@ -52,11 +52,17 @@ account::account(QString cardnumber, QString cardtype,QWidget *parent)
 
     //Estetään käyttäjää  muokkaamasta tablen ulkonäköä ja säädetään ulkonäköä
 
-    ui->tableTapahtumat->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->tableTapahtumat->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+    ui->tableTapahtumat->setColumnWidth(0, 50);
     ui->tableTapahtumat->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->tableTapahtumat->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     ui->tableTapahtumat->horizontalHeader()->setSectionsMovable(false);
     ui->tableTapahtumat->horizontalHeader()->setSectionsClickable(false);
-    ui->tableTapahtumat->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->tableTapahtumat->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableTapahtumat->horizontalHeader()->setFixedHeight(40);
+    ui->tableTapahtumat->verticalHeader()->setVisible(false);
+    ui->tableTapahtumat->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
 }
 
 account::~account()
@@ -230,9 +236,14 @@ void account::on_btnNostaMuu_clicked()
     }
 }
 
+void account::on_btnTapahtumatVasen_clicked()
+{
+    tapahtumat->prevPage();
+}
 
 
-
-
-
+void account::on_btnTapahtumatOikea_clicked()
+{
+    tapahtumat->nextPage();
+}
 
