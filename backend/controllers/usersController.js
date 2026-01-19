@@ -1,88 +1,151 @@
-/* Tämä tiedosto on esimerkkicontroller, jonka tarkoitus on todistaa, että HTTP-status-linjanveto, AppError ja errorHandler toimivat oikein, vaikka ei 
-ole vielä tietokantaa. */
+// Tämä tiedosto on usersController, täysin proseduuripohjainen versio
 
-// AppErrorin tuonti
+// Importit
 const AppError = require('../middleware/AppError');
+const pool = require('../db');
 
-// Hae käyttäjä ID:n perusteella. Palauta 200 OK, jos löytyy. 404 Not Found, jos ei löydy. 400 Bad Request, jos ID puuttuu.
-function getUserById(req, res, next) {
+// Muuntaa tietokantarivien kentät API-muotoon
+function mapUserRow(row) {
+    return {
+        idUser: row.iduser,
+        firstName: row.fname,
+        lastName: row.lname,
+        streetAddress: row.streetaddress,
+    };
+}
+
+// Hakee käyttäjän-id:n URL:stä joustavasti
+function getIdParam(req) {
+    return req.params?.idUser ?? req.params?.id;
+}
+
+// Tämä on virhekääntäjä
+function mapProcedureSignalToHttp(err) {
+    const raw = err?.sqlMessage || err?.message || '';
+    const msg = raw.toLowerCase();
+    
+    if (msg.includes('user not found')) return new AppError('Customer not found', 404);
+    
+    if (msg.includes('user already exists')) return new AppError('Customer already exists', 409);
+    
+    if (msg.includes('cannot delete user with existing')) {
+        return new AppError('Customer cannot be deleted because it has related data', 409);
+    }
+    
+    if (
+        msg.includes('cannot be null') ||
+        msg.includes('cannot be null or empty') ||
+        msg.includes('must be greater than') ||
+        msg.includes('invalid')
+    ) {
+        return new AppError(raw, 400);
+    }
+    
+    if (err?.code === 'ER_SIGNAL_EXCEPTION') return new AppError(raw || 'Bad Request', 400);
+    
+    return null;
+}
+
+// getUserById
+// Tämä hakee käyttäjän proseduurilla
+async function getUserById(req, res, next) {
     try {
-        // Lukee URL-parametrin
-        const id = req.params.id;
+        const idUser = getIdParam(req);
+        if (!idUser) throw new AppError('idUser is required', 400);
         
-        // Validointi, jos ID puuttuu -> 400 Bad Request
-        if (!id) {
-            throw new AppError('id is required', 400);
-        }
+        // Proseduurin haku
+        const [resultSets] = await pool.execute('CALL sp_read_user_info(?)', [idUser]);
+        const rows = resultSets?.[0] ?? [];
         
-        // Simuloi tietokantahakua
-        const user = null;
+        if (!rows.length) throw new AppError('Customer not found', 404);
         
-        // Ei löytynyt -> 404 Not Found
-        if (!user) {
-            throw new AppError('User not found', 404);
-        }
-        
-        // Löytyi -> 200 OK
-        res.status(200).json(user);
+        res.status(200).json(mapUserRow(rows[0]));
     } catch (err) {
+        const mapped = mapProcedureSignalToHttp(err);
+        if (mapped) return next(mapped);
         next(err);
     }
 }
 
-// Uuden käyttäjän luonti. Palauta -> 201 Created, jos onnistuu. 400 Bad Request, jos data puuttuu. 409 Conflict, jos duplikaatti
-function createUser(req, res, next) {
+// createUser
+// Luo käyttäjän proseduurilla
+async function createUser(req, res, next) {
     try {
-        // Lukee JSON-bodyn
-        const { name, email } = req.body;
-        
-        // Validointi, puuttuva kenttä -> 400
-        if (!name || !email) {
-            throw new AppError('name and email are required', 400);
+        const { idUser, firstName, lastName, streetAddress } = req.body ?? {};
+        if (!idUser) throw new AppError('idUser is required', 400);
+        if (!firstName || !lastName || !streetAddress) {
+            throw new AppError('firstName, lastName and streetAddress are required', 400);
         }
         
-        // Simuloi duplikaattitarkistusta, kun vaihtaa true -> 409 Conflict
-        const emailExists = false;
+        // Proseduurin haku
+        await pool.execute('CALL sp_create_user(?, ?, ?, ?)', [
+            idUser,
+            firstName,
+            lastName,
+            streetAddress,
+        ]);
         
-        if (emailExists) {
-            throw new AppError('Email already exists', 409);
-        }
-        
-        // Simuloi tietokantaan luotua käyttäjää
-        const created = { id: 123, name, email };
-        
-        // Onnistunut luonti -> 201 Created
-        res.status(201).json(created);
+        res.status(201).json({ idUser, firstName, lastName, streetAddress });
     } catch (err) {
+        const mapped = mapProcedureSignalToHttp(err);
+        if (mapped) return next(mapped);
+        
+        if (err?.code === 'ER_DUP_ENTRY') return next(new AppError('Customer already exists', 409));
+        
         next(err);
     }
 }
 
-// Käyttäjän poisto. Palauta 204 No Content, jos poistettu. 404 Not Found, jos ei löydy. 400 Bad Request, jos ID puuttuu
-function deleteUser(req, res, next) {
+// updateUser
+// Päivittää käyttäjän proseduurilla
+async function updateUser(req, res, next) {
     try {
-        // Lukee URL-parametrin
-        const id = req.params.id;
+        const idUser = getIdParam(req);
+        if (!idUser) throw new AppError('idUser is required', 400);
         
-        // Validointi -> 400
-        if (!id) {
-            throw new AppError('id is required', 400);
+        const { firstName, lastName, streetAddress } = req.body ?? {};
+        if (!firstName || !lastName || !streetAddress) {
+            throw new AppError('firstName, lastName and streetAddress are required', 400);
         }
         
-        // Simuloi poiston onnistumista, jos false -> 404
-        const deleted = true;
+        // Proseduurin haku
+        await pool.execute('CALL sp_update_user_info(?, ?, ?, ?)', [
+            idUser,
+            firstName,
+            lastName,
+            streetAddress,
+        ]);
         
-        if (!deleted) {
-            throw new AppError('User not found', 404);
-        }
+        res.status(200).json({ idUser, firstName, lastName, streetAddress });
+    } catch (err) {
+        const mapped = mapProcedureSignalToHttp(err);
+        if (mapped) return next(mapped);
+        next(err);
+    }
+}
+
+// deleteUser
+// Poistaa käyttäjän proseduurilla
+async function deleteUser(req, res, next) {
+    try {
+        const idUser = getIdParam(req);
+        if (!idUser) throw new AppError('idUser is required', 400);
         
-        // Onnistunut poisto -> 204 No Content. Ei response-bodyä
+        // Proseduurin haku
+        await pool.execute('CALL sp_delete_user(?)', [idUser]);
+        
         res.status(204).end();
-        // Kaikki virheet ohjataan keskitetylle error handlerille. Controller ei koskaan lähetä virhe-responsea itse
     } catch (err) {
+        const mapped = mapProcedureSignalToHttp(err);
+        if (mapped) return next(mapped);
+        
+        if (err?.code === 'ER_ROW_IS_REFERENCED_2') {
+            return next(new AppError('Customer cannot be deleted because it has related data', 409));
+        }
+        
         next(err);
     }
 }
 
-// Vie controller-funktiot ja mahdollistaa niiden käytön reitittimessä
-module.exports = { getUserById, createUser, deleteUser };
+// Export
+module.exports = { getUserById, createUser, updateUser, deleteUser };
