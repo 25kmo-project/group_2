@@ -30,7 +30,6 @@ private:
     double creditlimit = 1000;
     double nostosumma;
 
-    //QStandardItemModel *tapahtumat = nullptr;
     class logs *tapahtumat;
 
     QByteArray testData;
@@ -53,7 +52,6 @@ private slots:
     void on_btnNosta100_clicked();
     void on_btnNostaMuu_clicked();
     void on_btnTakaisinNostaValitse_clicked();
-
     void on_btnTapahtumatVasen_clicked();
     void on_btnTapahtumatOikea_clicked();
 };

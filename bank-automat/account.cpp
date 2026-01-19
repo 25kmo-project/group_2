@@ -229,6 +229,7 @@ void account::on_btnNostaMuu_clicked()
             ui->labelNostaValitseVirhe->hide(); // Piilottaa tekstin 2s päästä
         });
     }
+    //else if ()
     else {
         ui->labelNostaValitseVirhe->hide();
         ui->labelNostaVahvistaSumma->setText(QString::asprintf("%.2f €", nostosumma));
