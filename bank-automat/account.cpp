@@ -124,9 +124,15 @@ void account::on_btnTapahtumat_clicked()
 void account::on_btnNostaRahaa_clicked()
 {
     ui->stackedAccount->setCurrentWidget(ui->screenNostaValitse);
-    //piilotetaan virheraportti aluksi
+    //piilotetaan virheraporttit aluksi
     ui->labelNostaValitseVirhe->hide();
+    ui->labelNostaValitseKate->hide();
     ui->labelNostaValitseVirhe->setStyleSheet(
+        "font-size: 18pt;"
+        "qproperty-alignment: 'AlignCenter';"
+        "color: red;"
+        );
+    ui->labelNostaValitseKate->setStyleSheet(
         "font-size: 18pt;"
         "qproperty-alignment: 'AlignCenter';"
         "color: red;"
@@ -229,7 +235,14 @@ void account::on_btnNostaMuu_clicked()
             ui->labelNostaValitseVirhe->hide(); // Piilottaa tekstin 2s päästä
         });
     }
-    //else if ()
+    else if ((cardtype == "debit" and nostosumma > saldo) or (cardtype == "credit" and nostosumma > (creditlimit-saldo))) {
+        ui->labelNostaValitseVirhe->show();
+        ui->labelNostaValitseKate->show();
+        QTimer::singleShot(2000, this, [this]() {
+            ui->labelNostaValitseVirhe->hide(); // Piilottaa tekstin 2s päästä
+            ui->labelNostaValitseKate->hide();
+        });
+    }
     else {
         ui->labelNostaValitseVirhe->hide();
         ui->labelNostaVahvistaSumma->setText(QString::asprintf("%.2f €", nostosumma));
