@@ -99,7 +99,7 @@ async function deleteCardAccount(req, res, next) {
         if (!idCard || !idAccount) throw new AppError('Card id and account id are required', 400);
         // Call stored procedure
         await pool.execute('CALL sp_remove_card_from_account(?, ?)', [idCard, idAccount]);
-        res.status(204).json({ message: 'Card account link deleted successfully' });
+        res.status(204).end();
     } catch (err) {
         const appError = mapProcedureSignalToHttp(err);
         if (appError) return next(appError);
