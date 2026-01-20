@@ -32,22 +32,22 @@ API pyörii osoitteessa: `http://localhost:3000`
 
 #### Kortit ja Tilit (Cards & Accounts)
 
-- **GET /cardsaccounts/:idCard** - Hae kortin linkitetyt tilit
-- **POST /cardsaccounts** - Linkitä kortti tiliin
+- **GET /cardaccount/:idCard** - Hae kortin linkitetyt tilit
+- **POST /cardaccount** - Linkitä kortti tiliin
   ```json
   {
     "idCard": "CARD123456",
     "idAccount": 1
   }
   ```
-- **PUT /cardsaccounts/:idCard** - Päivitä kortin tiliyhdistelmä
+- **PUT /cardaccount/:idCard** - Päivitä kortin tiliyhdistelmä
   ```json
   {
     "IdAccount": 1,
     "newIdAccount": 2
   }
   ```
-- **DELETE /cardsaccounts/:idCard** - Poista kortin ja tilin linkki
+- **DELETE /cardaccount/:idCard** - Poista kortin ja tilin linkki
   ```json
   {
     "IdAccount": 1

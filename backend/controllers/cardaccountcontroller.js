@@ -77,12 +77,12 @@ async function createCardAccount(req, res, next) {
 async function updateCardAccount(req, res, next) {
     try {
         const idCard = req.params?.idCard;
-        const { IdAccount, newIdAccount } = req.body;
-        if (!idCard || !IdAccount || !newIdAccount) throw new AppError('Card id, account id and new account id are required', 400);
+        const { idAccount, newIdAccount } = req.body;
+        if (!idCard || !idAccount || !newIdAccount) throw new AppError('Card id, account id and new account id are required', 400);
 
         // Call stored procedure
-        await pool.execute('CALL sp_update_card_linked_account(?, ?, ?)', [idCard, IdAccount, newIdAccount]);
-        res.status(200).json({ idCard, IdAccount, newIdAccount });
+        await pool.execute('CALL sp_update_card_linked_account(?, ?, ?)', [idCard, idAccount, newIdAccount]);
+        res.status(200).json({ idCard, idAccount, newIdAccount });
     } catch (err) {
         const appError = mapProcedureSignalToHttp(err);
         if (appError) return next(appError);
@@ -94,11 +94,11 @@ async function updateCardAccount(req, res, next) {
 async function deleteCardAccount(req, res, next) {
     try {
         const idCard = req.params?.idCard;
-        const { IdAccount } = req.body;
+        const { idAccount } = req.body;
         
-        if (!idCard || !IdAccount) throw new AppError('Card id and account id are required', 400);
+        if (!idCard || !idAccount) throw new AppError('Card id and account id are required', 400);
         // Call stored procedure
-        await pool.execute('CALL sp_remove_card_from_account(?, ?)', [idCard, IdAccount]);
+        await pool.execute('CALL sp_remove_card_from_account(?, ?)', [idCard, idAccount]);
         res.status(200).json({ message: 'Card account link deleted successfully' });
     } catch (err) {
         const appError = mapProcedureSignalToHttp(err);

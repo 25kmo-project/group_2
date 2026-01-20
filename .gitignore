@@ -4,3 +4,4 @@ bank-automat/*.user
 node_modules/
 .qtcreator/
 .env
+backend/logs/

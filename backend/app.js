@@ -25,7 +25,7 @@ oletuksena */
 // Reittien kytkentä
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/cardsaccounts', cardsaccountsRouter);
+app.use('/cardaccount', cardsaccountsRouter);
 
 // 404-handler
 app.use((req, res, next) => {
