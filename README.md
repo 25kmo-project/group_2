@@ -74,6 +74,12 @@ Suorita seed virtuaalikoneella:<br>
 mysql -u käyttäjä -p bank_db < seed.sql
 ### Tietokanta proseduurit
 
+## 1) Käyttäjät
+## 2) Tilit
+## 3) Kortit
+## 4) Transaktiot
+## 5) Luottotili
+
 #### Tietokannan hallinta
 
 **Käyttäjän lisäys**
@@ -116,6 +122,14 @@ CALL sp_add_account(iduser, balance, credit_limit);
 -- Poistaa tilin (tilillä ei saa olla kortteja, logit poistetaan automaattisesti)
 CALL sp_delete_account(idaccount);
 -- Esimerkki: CALL sp_delete_account(1);
+```
+
+**Tilin tietojen lukeminen**
+```sql
+-- Hakee tilin tiedot
+CALL sp_read_account_info(idaccount);
+-- Esimerkki: CALL sp_read_account_info(1);
+-- Palauttaa: idaccount, iduser, balance, creditlimit
 ```
 
 #### Korttien hallinta
@@ -208,6 +222,14 @@ CALL sp_credit_withdraw(idaccount, amount);
 CALL sp_credit_repay(idaccount, amount);
 -- Esimerkki: CALL sp_credit_repay(1, 150.00);
 ```
+
+**Luottorajan päivitys**
+```sql
+-- Päivittää tilin luottorajan
+CALL sp_update_creditlimit(idaccount, creditlimit);
+-- Esimerkki: CALL sp_update_creditlimit(1, 2000.00);
+```
+
 ### Database
 
 Suorita seed virtuaalikoneella:

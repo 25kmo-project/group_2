@@ -280,6 +280,38 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- READ ACCOUNT INFO
+-- example CALL sp_read_account_info(idaccount);
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_read_account_info(
+  IN p_idaccount INT
+)
+BEGIN
+  DECLARE v_account_count INT;
+
+  -- Validate parameter
+  IF p_idaccount IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Account ID cannot be NULL';
+  END IF;
+
+  -- Check if account exists
+  SELECT COUNT(*) INTO v_account_count
+  FROM accounts
+  WHERE idaccount = p_idaccount;
+
+  IF v_account_count = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Account not found';
+  END IF;
+
+  -- Retrieve account info
+  SELECT idaccount, iduser, balance, creditlimit
+  FROM accounts
+  WHERE idaccount = p_idaccount;
+END$$
+DELIMITER ;
+
 -- ========================================
 -- KORTTIEN HALLINTA (Card Management)
 -- ========================================
@@ -400,6 +432,28 @@ CREATE PROCEDURE sp_remove_card_from_account(
 
 BEGIN
   DECLARE v_link_exists INT;
+
+  START TRANSACTION;
+
+  -- Check if link exists
+  SELECT COUNT(*) INTO v_link_exists
+  FROM accounts_cards
+  WHERE idcard = p_idcard AND idaccount = p_idaccount
+  FOR UPDATE;
+
+  IF v_link_exists = 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Link between card and account not found';
+  END IF;
+
+  -- Remove link
+  DELETE FROM accounts_cards
+  WHERE idcard = p_idcard AND idaccount = p_idaccount;
+
+  COMMIT;
+END$$
+DELIMITER ;
 
   START TRANSACTION;
 
@@ -853,6 +907,41 @@ BEGIN
   COMMIT;
 END$$
 
+DELIMITER ;
+
+-- UPDATE CREDITLIMIT
+-- example CALL sp_update_creditlimit(idaccount, creditlimit);
+
+DELIMITER $$
+CREATE PROCEDURE sp_update_creditlimit(
+  IN p_idaccount INT,
+  IN p_creditlimit DECIMAL(10,2)
+)
+BEGIN
+  DECLARE v_account_count INT;
+  
+  IF p_creditlimit IS NULL OR p_creditlimit < 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Credit limit must be 0 or greater';
+  END IF;
+
+  START TRANSACTION;
+  
+  SELECT COUNT(*) INTO v_account_count
+  FROM accounts
+  WHERE idaccount = p_idaccount
+  FOR UPDATE;
+  
+  IF v_account_count = 0 THEN
+    ROLLBACK;
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Account not found';
+  END IF;
+  
+  UPDATE accounts
+  SET creditlimit = p_creditlimit
+  WHERE idaccount = p_idaccount;
+  
+  COMMIT;
+END$$
 DELIMITER ;
 
 -- END PROCEDURES
