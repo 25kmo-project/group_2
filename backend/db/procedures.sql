@@ -428,32 +428,8 @@ CREATE PROCEDURE sp_remove_card_from_account(
   IN p_idcard VARCHAR(45),
   IN p_idaccount INT
 )
-
-
 BEGIN
   DECLARE v_link_exists INT;
-
-  START TRANSACTION;
-
-  -- Check if link exists
-  SELECT COUNT(*) INTO v_link_exists
-  FROM accounts_cards
-  WHERE idcard = p_idcard AND idaccount = p_idaccount
-  FOR UPDATE;
-
-  IF v_link_exists = 0 THEN
-    ROLLBACK;
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Link between card and account not found';
-  END IF;
-
-  -- Remove link
-  DELETE FROM accounts_cards
-  WHERE idcard = p_idcard AND idaccount = p_idaccount;
-
-  COMMIT;
-END$$
-DELIMITER ;
 
   START TRANSACTION;
 
