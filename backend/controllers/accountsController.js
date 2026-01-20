@@ -97,7 +97,7 @@ async function createAccount(req, res, next) {
 }
 
 // updateAccountCreditLimit
-// Päivittää tilin proseduurilla
+// Päivittää tilin creditlimitin proseduurilla
 async function updateAccountCreditLimit(req, res, next) {
   try {
     const idAccount = req.params.id;
