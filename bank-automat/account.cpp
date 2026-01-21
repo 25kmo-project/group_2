@@ -259,6 +259,7 @@ void account::on_btnNosta100_clicked()
 
 void account::on_btnNostaMuu_clicked()
 {
+    //tarkistetaan että inputin saa pyöräytettyä doubleksi
     bool ok;
     nostosumma = ui->labelNostosumma->text().toDouble(&ok);
     ui->labelNostosumma->setText("");
