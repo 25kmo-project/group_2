@@ -43,6 +43,8 @@ private:
     // Shows an error label for a short period
     void showWithdrawError(QLabel *label, const QString &text, int ms = 2000);
 
+    void applySaldoTextColors();
+
 protected:
     void paintEvent(QPaintEvent *event) override;
 private slots:

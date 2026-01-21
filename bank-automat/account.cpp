@@ -2,6 +2,7 @@
 #include "ui_account.h"
 #include <qpainter.h>
 #include <cmath>
+#include <QRegularExpression>
 
 #include <QStandardItemModel>
 
@@ -40,6 +41,45 @@ void account::showWithdrawError(QLabel *label, const QString &text, int ms)
     });
 }
 
+// Helper-funktio, joka asettaa labelin tekstivärin turvallisesti
+// Poistaa ensin mahdollisen aiemmin asetetun color-tyylin, jotta stylesheet ei kasva jokaisella kutsulla
+static void setLabelColor(QLabel* lbl, const QString& color)
+{
+    if (!lbl) return;
+
+    // Regex, jolla poistetaan aiempi "color: ...;" määrittely
+    // Static -> luodaan vain kerran, ei joka kutsulla
+    static const QRegularExpression colorRe("color\\s*:\\s*[^;]+;");
+
+    QString s = lbl->styleSheet();
+    s.remove(colorRe); // poistetaan vanha väri
+    s += " color: " + color + ";"; // lisätään uusi väri
+    lbl->setStyleSheet(s);
+}
+
+// Asettaa saldon näkymän tekstivärit
+// Erottaa ulkoasun (boksi) ja logiikan (värit)
+// Tätä kutsutaan aina kun saldo-näkymä avataan
+void account::applySaldoTextColors()
+{
+    // Värit valittu niin, että teksti näkyy varmasti valkoisella taustalla
+    const QString mainColor = "#000000"; // varsinainen saldo
+    const QString infoColor = "#333333"; // credit limit / info
+    const QString positive  = "#0A7A0A"; // vihreä: luottoa jäljellä
+    const QString warning   = "#B00020"; // punainen: luotto ylitetty
+
+    setLabelColor(ui->labelSaldoSaldo, mainColor);
+    setLabelColor(ui->labelSaldoCreditLimit, infoColor);
+
+    // Credit-tilillä luottoa jäljellä -väri riippuu tilanteesta
+    QString luottoColor = infoColor;
+    if (cardtype == "credit") {
+        double creditLeft = creditlimit - saldo;
+        luottoColor = (creditLeft < 0) ? warning : positive;
+    }
+    setLabelColor(ui->labelSaldoLuottoaJaljella, luottoColor);
+}
+
 account::account(QString cardnumber, QString cardtype,QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::account),
@@ -48,6 +88,26 @@ account::account(QString cardnumber, QString cardtype,QWidget *parent)
 {
     ui->setupUi(this);
     ui->stackedAccount->setCurrentWidget(ui->screenLogin);
+
+    // Saldokenttien yhteinen ulkoasu
+    // Asetetaan vain kerran konstruktorissa, jotta samaa tyyliä ei tarvitse toistaa joka näkymän avauksessa
+    const QString saldoBoxStyle =
+        "font-size: 18pt;"
+        "qproperty-alignment: 'AlignRight';"
+        "border: 5px solid #7FABC4;"
+        "border-radius: 15px;"
+        "background: #FFFFFF;"
+        "padding: 6px;";
+
+    // Pakotetaan saldolabelit piirtämään oma tausta
+    ui->labelSaldoSaldo->setAutoFillBackground(true);
+    ui->labelSaldoCreditLimit->setAutoFillBackground(true);
+    ui->labelSaldoLuottoaJaljella->setAutoFillBackground(true);
+
+    ui->labelSaldoSaldo->setStyleSheet(saldoBoxStyle);
+    ui->labelSaldoCreditLimit->setStyleSheet(saldoBoxStyle);
+    ui->labelSaldoLuottoaJaljella->setStyleSheet(saldoBoxStyle);
+
     ui->labelLoginCardnumber->setText(cardnumber + " " + cardtype);
     ui->labelLoginCardnumber->setStyleSheet(
         "font-size: 18pt;"
@@ -116,30 +176,11 @@ void account::paintEvent(QPaintEvent *event)
 void account::on_btnSaldo_clicked()
 {
     ui->stackedAccount->setCurrentWidget(ui->screenSaldo);
+
     ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo));
-    ui->labelSaldoSaldo->setStyleSheet(
-        "font-size: 18pt;"
-        "qproperty-alignment: 'AlignRight';"
-        "border: 5px solid #7FABC4;"
-        "border-radius: 15px;"
-        "background-color: white;"
-        );
     ui->labelSaldoCreditLimit->setText(QString::asprintf("%.2f €", creditlimit));
-    ui->labelSaldoCreditLimit->setStyleSheet(
-        "font-size: 18pt;"
-        "qproperty-alignment: 'AlignRight';"
-        "border: 5px solid #7FABC4;"
-        "border-radius: 15px;"
-        "background-color: white;"
-        );
     ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit-saldo));
-    ui->labelSaldoLuottoaJaljella->setStyleSheet(
-        "font-size: 18pt;"
-        "qproperty-alignment: 'AlignRight';"
-        "border: 5px solid #7FABC4;"
-        "border-radius: 15px;"
-        "background-color: white;"
-        );
+
     //piilotetaan vain Creditillä käytössä olevat tiedot jos debit
     if (cardtype == "debit"){
         ui->labelSaldoCreditLimit->hide();
@@ -147,6 +188,9 @@ void account::on_btnSaldo_clicked()
         ui->labelSaldoCreditText->hide();
         ui->labelSaldoLuottoText->hide();
     }
+
+    // Asetetaan tekstivärit lopuksi, jotta ne eivät yliajaudu muiden tyylien toimesta
+    applySaldoTextColors();
 }
 
 
