@@ -7,6 +7,7 @@
 #include <QProcess>
 #include <QCoreApplication>
 #include <QTimer>
+#include <QLabel>
 #include "logs.h"
 
 namespace Ui {
@@ -33,6 +34,17 @@ private:
     class logs *tapahtumat;
 
     QByteArray testData;
+
+    // Withdrawal validation
+    // Valid amounts are: >= 20, whole euros, divisible by 10 and not 10 or 30
+    bool isValidBillAmount(double amount) const;
+    bool hasSufficientFunds(double amount) const;
+
+    // Shows an error label for a short period
+    void showWithdrawError(QLabel *label, const QString &text, int ms = 2000);
+
+    void applySaldoTextColors();
+    void applyWithdrawConfirmStyle();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
