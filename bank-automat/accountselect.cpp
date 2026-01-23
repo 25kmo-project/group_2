@@ -5,13 +5,15 @@
 #include <QPixmap>
 
 
-accountselect::accountselect(QString message, QWidget *parent)
+accountselect::accountselect(QString username, QWidget *parent)
     : QDialog(parent)
-    , ui(new Ui::accountselect),
-    cardnumber(message)
+    , ui(new Ui::accountselect)
+    , cardnumber(username)
 {
     ui->setupUi(this);
-    ui->labelTest->setText(cardnumber);
+
+    // Näytetään kirjautunut käyttäjä siististi
+    ui->labelTest->setText("Käyttäjä: " + username);
 }
 
 accountselect::~accountselect()
@@ -48,6 +50,3 @@ void accountselect::paintEvent(QPaintEvent *event)
     static const QPixmap selectPix(":/images/backgroundLogin.png");
     painter.drawPixmap(rect(), selectPix);
 }
-
-
-

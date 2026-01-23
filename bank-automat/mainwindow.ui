@@ -6,30 +6,120 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1237</width>
-    <height>651</height>
+    <width>1100</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Pankkiautomaatti</string>
   </property>
-  <property name="autoFillBackground">
-   <bool>false</bool>
+
+  <!-- ATM theme directly in UI -->
+  <property name="styleSheet">
+   <string notr="true"><![CDATA[
+/* =========================
+   ATM THEME (MainWindow.ui)
+   ========================= */
+
+/* Base */
+QWidget#centralwidget {
+    background: transparent;
+    font-family: "Segoe UI";
+    font-size: 16px;
+}
+
+/* ATM panel/card */
+QFrame#loginCard {
+    background-color: rgba(18, 20, 24, 220);
+    border: 1px solid rgba(255, 255, 255, 30);
+    border-radius: 18px;
+}
+
+/* Titles */
+QLabel#welcomeLabel {
+    color: #F2F5FA;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+QLabel#subtitleLabel {
+    color: rgba(242, 245, 250, 170);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+/* Field labels */
+QLabel#userLabel, QLabel#passLabel {
+    color: rgba(242, 245, 250, 190);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* Inputs */
+QLineEdit#user, QLineEdit#password {
+    background-color: rgba(255, 255, 255, 245);
+    color: #121418;
+
+    border: 2px solid rgba(120, 140, 160, 180);
+    border-radius: 10px;
+
+    padding: 10px 12px;
+    font-size: 16px;
+}
+
+QLineEdit#user:focus, QLineEdit#password:focus {
+    border: 2px solid rgba(40, 110, 220, 230);
+    background-color: rgba(255, 255, 255, 255);
+}
+
+QLineEdit#user::placeholder, QLineEdit#password::placeholder {
+    color: rgba(18, 20, 24, 110);
+}
+
+/* Error */
+QLabel#errorLabel {
+    color: #B00020;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* Login button */
+QPushButton#KirjauduButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #2A5CFF,
+                                stop:1 #1B3FBF);
+    color: #FFFFFF;
+
+    border: 1px solid rgba(0, 0, 0, 60);
+    border-radius: 12px;
+
+    font-size: 16px;
+    font-weight: 800;
+    padding: 12px 14px;
+}
+
+QPushButton#KirjauduButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #3A6DFF,
+                                stop:1 #2449D8);
+}
+
+QPushButton#KirjauduButton:pressed {
+    /* pressed: painuu alas -> vaihda border-bottom pienemmäksi */
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #1E47D6,
+                                stop:1 #16339E);
+    border-bottom: 1px solid rgba(0, 0, 0, 110);
+    padding-top: 13px;  /* pieni “painallus” */
+    padding-bottom: 11px;
+}
+]]></string>
   </property>
+
   <widget class="QWidget" name="centralwidget">
-   <property name="font">
-    <font>
-     <family>Georgia</family>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="layoutDirection">
-    <enum>Qt::LayoutDirection::LeftToRight</enum>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="spacing">
-     <number>10</number>
-    </property>
+   <layout class="QVBoxLayout" name="rootLayout">
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -42,181 +132,175 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
+
     <item>
      <spacer name="topSpacer">
       <property name="orientation">
-       <enum>Qt::Orientation::Vertical</enum>
+       <enum>Qt::Vertical</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>100</height>
+        <height>120</height>
        </size>
       </property>
      </spacer>
     </item>
-    <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="welcomeLabel">
+
+    <item alignment="Qt::AlignHCenter">
+     <widget class="QFrame" name="loginCard">
       <property name="minimumSize">
        <size>
-        <width>0</width>
-        <height>50</height>
+        <width>420</width>
+        <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>300</width>
-        <height>100</height>
+        <width>480</width>
+        <height>16777215</height>
        </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Georgia</family>
-        <italic>false</italic>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="layoutDirection">
-       <enum>Qt::LayoutDirection::LeftToRight</enum>
       </property>
       <property name="frameShape">
-       <enum>QFrame::Shape::NoFrame</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:24pt;&quot;&gt;TERVETULOA&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="scaledContents">
-       <bool>false</bool>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
+      <layout class="QVBoxLayout" name="loginCardLayout">
+       <property name="spacing">
+        <number>12</number>
+       </property>
+       <property name="leftMargin">
+        <number>26</number>
+       </property>
+       <property name="topMargin">
+        <number>26</number>
+       </property>
+       <property name="rightMargin">
+        <number>26</number>
+       </property>
+       <property name="bottomMargin">
+        <number>22</number>
+       </property>
+
+       <item>
+        <widget class="QLabel" name="welcomeLabel">
+         <property name="text">
+          <string>TERVETULOA</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QLabel" name="subtitleLabel">
+         <property name="text">
+          <string>KIRJAUDU SISÄÄN</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QLabel" name="userLabel">
+         <property name="text">
+          <string>Käyttäjätunnus</string>
+         </property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QLineEdit" name="user">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>44</height>
+          </size>
+         </property>
+         <property name="placeholderText">
+          <string>esim. 12345</string>
+         </property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QLabel" name="passLabel">
+         <property name="text">
+          <string>Salasana</string>
+         </property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QLineEdit" name="password">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>44</height>
+          </size>
+         </property>
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
+         <property name="placeholderText">
+          <string>••••••</string>
+         </property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QLabel" name="errorLabel">
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Virheellinen käyttäjätunnus tai salasana</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+
+       <item>
+        <widget class="QPushButton" name="KirjauduButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>48</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Kirjaudu</string>
+         </property>
+        </widget>
+       </item>
+
+      </layout>
      </widget>
     </item>
-    <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="userLabel">
-      <property name="maximumSize">
-       <size>
-        <width>142</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Käyttäjätunnus</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLineEdit" name="user">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>142</width>
-        <height>22</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>142</width>
-        <height>22</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="passLabel">
-      <property name="maximumSize">
-       <size>
-        <width>142</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Salasana</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLineEdit" name="password">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>142</width>
-        <height>22</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>142</width>
-        <height>22</height>
-       </size>
-      </property>
-      <property name="echoMode">
-       <enum>QLineEdit::EchoMode::Password</enum>
-      </property>
-     </widget>
-    </item>
-    <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QPushButton" name="KirjauduButton">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="layoutDirection">
-       <enum>Qt::LayoutDirection::LeftToRight</enum>
-      </property>
-      <property name="text">
-       <string>Kirjaudu</string>
-      </property>
-     </widget>
-    </item>
+
     <item>
      <spacer name="bottomSpacer">
       <property name="orientation">
-       <enum>Qt::Orientation::Vertical</enum>
+       <enum>Qt::Vertical</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>40</height>
+        <height>140</height>
        </size>
       </property>
      </spacer>
     </item>
+
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1237</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>

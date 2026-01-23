@@ -10,125 +10,232 @@
     <height>651</height>
    </rect>
   </property>
-  <property name="acceptDrops">
-   <bool>true</bool>
-  </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Valitse tili</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="1">
-    <spacer name="verticalSpacer">
+  <property name="styleSheet">
+   <string notr="true">
+QDialog {
+    background: transparent;
+    font-family: &quot;Segoe UI&quot;;
+	font-size:16px;
+}
+
+/* Korttimainen keskipaneeli */
+QFrame#card {
+    background-color: rgba(18, 20, 24, 220);
+    border: 1px solid rgba(255, 255, 255, 30);
+    border-radius: 18px;
+}
+
+/* Otsikko */
+QLabel#titleLabel {
+    color: #F2F5FA;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* Pieni ohjeteksti */
+QLabel#hintLabel {
+    color: rgba(242, 245, 250, 170);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+/* Käyttäjän nimi / kortinhaltija */
+QLabel#labelTest {
+    color: rgba(242, 245, 250, 170);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+/* Nappityyli sama kuin mainwindow */
+QPushButton#btnSelectDebit,
+QPushButton#btnSelectCredit {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #2A5CFF,
+                                stop:1 #1B3FBF);
+    color: #FFFFFF;
+
+    border: 1px solid rgba(0, 0, 0, 60);
+    border-radius: 12px;
+
+    font-size: 16px;
+    font-weight: 800;
+    padding: 12px 14px;
+}
+
+QPushButton#btnSelectDebit:hover,
+QPushButton#btnSelectCredit:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #3A6DFF,
+                                stop:1 #2449D8);
+}
+
+QPushButton#btnSelectDebit:pressed,
+QPushButton#btnSelectCredit:pressed {
+   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #1E47D6,
+                                stop:1 #16339E);
+    border-bottom: 1px solid rgba(0, 0, 0, 110);
+    padding-top: 13px;  /* pieni “painallus” */
+    padding-bottom: 11px;
+}
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <spacer name="topSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>203</height>
+       <height>120</height>
       </size>
      </property>
     </spacer>
    </item>
-   <item row="1" column="0">
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>426</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="1" column="1">
-    <widget class="QFrame" name="frame">
+   <item alignment="Qt::AlignmentFlag::AlignHCenter">
+    <widget class="QFrame" name="card">
      <property name="minimumSize">
       <size>
-       <width>350</width>
-       <height>210</height>
+       <width>420</width>
+       <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>350</width>
-       <height>210</height>
+       <width>480</width>
+       <height>16777215</height>
       </size>
      </property>
      <property name="frameShape">
-      <enum>QFrame::Shape::StyledPanel</enum>
+      <enum>QFrame::Shape::NoFrame</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0" rowspan="2" colspan="3">
-       <widget class="QLabel" name="labelChooseAccount">
+     <layout class="QVBoxLayout" name="cardLayout">
+      <property name="spacing">
+       <number>14</number>
+      </property>
+      <property name="leftMargin">
+       <number>28</number>
+      </property>
+      <property name="topMargin">
+       <number>28</number>
+      </property>
+      <property name="rightMargin">
+       <number>28</number>
+      </property>
+      <property name="bottomMargin">
+       <number>22</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="titleLabel">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:24pt; font-weight:700;&quot;&gt;Valitse käytettävä tili&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>VALITSE KÄYTETTÄVÄ TILI</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item>
        <widget class="QLabel" name="labelTest">
         <property name="text">
-         <string>testlabel</string>
+         <string>Käyttäjä: —</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="btnSelectDebit">
-        <property name="minimumSize">
+      <item>
+       <spacer name="midSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
          <size>
-          <width>105</width>
-          <height>50</height>
+          <width>20</width>
+          <height>6</height>
          </size>
         </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="hintLabel">
         <property name="text">
-         <string>Debit</string>
+         <string>Valitse Debit tai Credit -toiminto jatkaaksesi.</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QPushButton" name="btnSelectCredit">
-        <property name="minimumSize">
-         <size>
-          <width>105</width>
-          <height>50</height>
-         </size>
+      <item>
+       <layout class="QHBoxLayout" name="buttonRow">
+        <property name="spacing">
+         <number>14</number>
         </property>
-        <property name="text">
-         <string>Credit</string>
-        </property>
-       </widget>
+        <item>
+         <widget class="QPushButton" name="btnSelectDebit">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>48</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Debit</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSelectCredit">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>48</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Credit</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="1" column="2">
-    <spacer name="horizontalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>425</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="2" column="1">
-    <spacer name="verticalSpacer_2">
+   <item>
+    <spacer name="bottomSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>202</height>
+       <height>140</height>
       </size>
      </property>
     </spacer>

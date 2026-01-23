@@ -41,53 +41,6 @@ void account::showWithdrawError(QLabel *label, const QString &text, int ms)
     });
 }
 
-// Helper-funktio, joka asettaa labelin tekstivärin turvallisesti
-// Poistaa ensin mahdollisen aiemmin asetetun color-tyylin, jotta stylesheet ei kasva jokaisella kutsulla
-static void setLabelColor(QLabel* lbl, const QString& color)
-{
-    if (!lbl) return;
-
-    // Regex, jolla poistetaan aiempi "color: ...;" määrittely
-    // Static -> luodaan vain kerran, ei joka kutsulla
-    static const QRegularExpression colorRe("color\\s*:\\s*[^;]+;");
-
-    QString s = lbl->styleSheet();
-    s.remove(colorRe); // poistetaan vanha väri
-    s += " color: " + color + ";"; // lisätään uusi väri
-    lbl->setStyleSheet(s);
-}
-
-// Asettaa saldon näkymän tekstivärit
-// Erottaa ulkoasun (boksi) ja logiikan (värit)
-// Tätä kutsutaan aina kun saldo-näkymä avataan
-void account::applySaldoTextColors()
-{
-    // Värit valittu niin, että teksti näkyy varmasti valkoisella taustalla
-    const QString mainColor = "#000000"; // varsinainen saldo
-    const QString infoColor = "#333333"; // credit limit / info
-    const QString positive  = "#0A7A0A"; // vihreä: luottoa jäljellä
-    const QString warning   = "#B00020"; // punainen: luotto ylitetty
-
-    setLabelColor(ui->labelSaldoSaldo, mainColor);
-    setLabelColor(ui->labelSaldoCreditLimit, infoColor);
-
-    // Credit-tilillä luottoa jäljellä -väri riippuu tilanteesta
-    QString luottoColor = infoColor;
-    if (cardtype == "credit") {
-        double creditLeft = creditlimit - saldo;
-        luottoColor = (creditLeft < 0) ? warning : positive;
-    }
-    setLabelColor(ui->labelSaldoLuottoaJaljella, luottoColor);
-}
-
-// Asettaa noston vahvistusnäytön summalabelin tyylin (väri tms.)
-// Kutsutaan aina ennen siirtymistä screenNostaVahvista -näkymään
-void account::applyWithdrawConfirmStyle()
-{
-    // Varmistetaan että teksti näkyy valkoisella taustalla
-    setLabelColor(ui->labelNostaVahvistaSumma, "#000000");
-}
-
 account::account(QString cardnumber, QString cardtype,QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::account),
@@ -97,43 +50,7 @@ account::account(QString cardnumber, QString cardtype,QWidget *parent)
     ui->setupUi(this);
     ui->stackedAccount->setCurrentWidget(ui->screenLogin);
 
-    // Saldokenttien yhteinen ulkoasu
-    // Asetetaan vain kerran konstruktorissa, jotta samaa tyyliä ei tarvitse toistaa joka näkymän avauksessa
-    const QString saldoBoxStyle =
-        "font-size: 18pt;"
-        "qproperty-alignment: 'AlignRight';"
-        "border: 5px solid #7FABC4;"
-        "border-radius: 15px;"
-        "background: #FFFFFF;"
-        "padding: 6px;";
-
-    // Pakotetaan saldolabelit piirtämään oma tausta
-    ui->labelSaldoSaldo->setAutoFillBackground(true);
-    ui->labelSaldoCreditLimit->setAutoFillBackground(true);
-    ui->labelSaldoLuottoaJaljella->setAutoFillBackground(true);
-
-    ui->labelSaldoSaldo->setStyleSheet(saldoBoxStyle);
-    ui->labelSaldoCreditLimit->setStyleSheet(saldoBoxStyle);
-    ui->labelSaldoLuottoaJaljella->setStyleSheet(saldoBoxStyle);
-
     ui->labelLoginCardnumber->setText(cardnumber + " " + cardtype);
-    ui->labelLoginCardnumber->setStyleSheet(
-        "font-size: 18pt;"
-        "qproperty-alignment: 'AlignCenter';"
-        );
-    //Monta tapaa päästä allaolevaan, niin formatoidaan täällä kerran eikä joka paikassa erikseen
-    ui->labelNostaVahvistaSumma->setStyleSheet(
-        "font-size: 18pt;"
-        "qproperty-alignment: 'AlignRight';"
-        "border: 5px solid #7FABC4;"
-        "border-radius: 15px;"
-        "background: white;" // Tausta piirretään stylesheetin kautta
-        "color: #000000;" // Musta teksti valkoista taustaa vasten
-        "padding: 6px;"
-    );
-    // Pakottaa Qt:n piirtämään widgetin taustan stylesheetin mukaisesti
-    // Tämä on tärkeää, koska ilman tätä QLabel voi jäädä läpinäkyväksi
-    ui->labelNostaVahvistaSumma->setAttribute(Qt::WA_StyledBackground, true);
 
     //testidataa taulua varten
     testData = R"([
@@ -201,9 +118,6 @@ void account::on_btnSaldo_clicked()
         ui->labelSaldoCreditText->hide();
         ui->labelSaldoLuottoText->hide();
     }
-
-    // Asetetaan tekstivärit lopuksi, jotta ne eivät yliajaudu muiden tyylien toimesta
-    applySaldoTextColors();
 }
 
 
@@ -219,16 +133,7 @@ void account::on_btnNostaRahaa_clicked()
     //piilotetaan virheraporttit aluksi
     ui->labelNostaValitseVirhe->hide();
     ui->labelNostaValitseKate->hide();
-    ui->labelNostaValitseVirhe->setStyleSheet(
-        "font-size: 18pt;"
-        "qproperty-alignment: 'AlignCenter';"
-        "color: red;"
-        );
-    ui->labelNostaValitseKate->setStyleSheet(
-        "font-size: 18pt;"
-        "qproperty-alignment: 'AlignCenter';"
-        "color: red;"
-        );
+    ui->labelNostaValitseVirhe_2->hide();
 
     //kursori summakenttaään
     ui->labelNostosumma->setFocus();
@@ -287,7 +192,6 @@ void account::on_btnNosta20_clicked()
     nostosumma = 20;
     ui->labelNostaVahvistaSumma->setText(QString::asprintf("%.2f €", nostosumma));
     // Asetetaan vahvistusnäkymän tekstivärit ennen näkymän vaihtoa
-    applyWithdrawConfirmStyle();
     ui->stackedAccount->setCurrentWidget(ui->screenNostaVahvista);
 }
 
@@ -296,7 +200,6 @@ void account::on_btnNosta40_clicked()
 {
     nostosumma = 40;
     ui->labelNostaVahvistaSumma->setText(QString::asprintf("%.2f €", nostosumma));
-    applyWithdrawConfirmStyle();
     ui->stackedAccount->setCurrentWidget(ui->screenNostaVahvista);
 }
 
@@ -305,7 +208,6 @@ void account::on_btnNosta50_clicked()
 {
     nostosumma = 50;
     ui->labelNostaVahvistaSumma->setText(QString::asprintf("%.2f €", nostosumma));
-    applyWithdrawConfirmStyle();
     ui->stackedAccount->setCurrentWidget(ui->screenNostaVahvista);
 }
 
@@ -314,7 +216,6 @@ void account::on_btnNosta100_clicked()
 {
     nostosumma = 100;
     ui->labelNostaVahvistaSumma->setText(QString::asprintf("%.2f €", nostosumma));
-    applyWithdrawConfirmStyle();
     ui->stackedAccount->setCurrentWidget(ui->screenNostaVahvista);
 }
 
@@ -327,7 +228,7 @@ void account::on_btnNostaMuu_clicked()
     ui->labelNostosumma->setText("");
 
     if (!ok || nostosumma <= 0) {
-        showWithdrawError(ui->labelNostaValitseVirhe, "Virheellinen summa");
+        showWithdrawError(ui->labelNostaValitseVirhe_2, "Virheellinen summa");
         return;
     }
 
@@ -339,7 +240,6 @@ void account::on_btnNostaMuu_clicked()
 
     // Check funds/credit
     if (!hasSufficientFunds(nostosumma)) {
-        showWithdrawError(ui->labelNostaValitseVirhe, "Virheellinen summa");
         showWithdrawError(ui->labelNostaValitseKate, "Kate ei riitä");
         return;
     }
@@ -347,7 +247,6 @@ void account::on_btnNostaMuu_clicked()
     ui->labelNostaValitseVirhe->hide();
     ui->labelNostaValitseKate->hide();
     ui->labelNostaVahvistaSumma->setText(QString::asprintf("%.2f €", nostosumma));
-    applyWithdrawConfirmStyle();
     ui->stackedAccount->setCurrentWidget(ui->screenNostaVahvista);
 }
 

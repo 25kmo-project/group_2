@@ -63,11 +63,7 @@ void MainWindow::showMainScreen()
 
 void MainWindow::setMainControlsVisible(bool visible)
 {
-    const auto controls = ui->centralwidget->findChildren<QWidget *>(QString(),
-                                                                     Qt::FindDirectChildrenOnly);
-    for (QWidget *w : controls) {
-        w->setVisible(visible);
-    }
+    ui->loginCard->setVisible(visible);
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -89,28 +85,22 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void MainWindow::on_KirjauduButton_clicked()
 {
+    ui->errorLabel->setVisible(false); // piilota vanha virhe
+
     username = ui->user->text().trimmed();
     QString password = ui->password->text();
 
     // Testaa kovakoodatut tunnukset
     if (username == VALID_USERNAME && password == VALID_PASSWORD) {
-        ui->welcomeLabel->setText("Kirjautuminen onnistui!");
-        ui->welcomeLabel->setStyleSheet("QLabel { color: green; font-size: 16px; }");
-        ui->welcomeLabel->setWordWrap(true);
-        ui->welcomeLabel->adjustSize();
-
-        //Jos vain yksi tili kortilla niin tähän logiikka suoraan tilinhallintaan ilman tilinvalintaa?
-
-        //avaa pienen viiveen jälkeen tilinvalintaruudun
+        ui->errorLabel->setVisible(false);
         selectTimer = new QTimer(this);
         connect(selectTimer, &QTimer::timeout, this, &MainWindow::openSelectWindow);
-        selectTimer->setSingleShot(true);   //avaa vain kerran
+        selectTimer->setSingleShot(true);
         selectTimer->start(1000);
     } else {
-        ui->welcomeLabel->setText("Virheellinen käyttäjätunnus tai salasana!");
-        ui->welcomeLabel->setStyleSheet("QLabel { color: red; font-size: 16px; }");
-        ui->welcomeLabel->setWordWrap(true);
-        ui->welcomeLabel->adjustSize();
+        ui->errorLabel->setText("Virheellinen käyttäjätunnus tai salasana");
+        ui->errorLabel->setVisible(true);
+
         ui->password->clear();
         ui->password->setFocus();
     }
