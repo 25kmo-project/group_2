@@ -8,11 +8,13 @@ var logger = require('morgan');
 
 // Reittien tuonti
 var indexRouter = require('./routes/index');
+var authRouter = require('./routes/auth');
 var usersRouter = require('./routes/users');
 var cardsRouter = require('./routes/cards');
 var cardsaccountsRouter = require('./routes/cardaccount');
 var accountsRouter = require('./routes/accounts');
 var logRouter = require('./routes/log');
+var atmRouter = require('./routes/atm');
 
 // Express-sovelluksen tuonti
 var app = express();
@@ -27,11 +29,13 @@ oletuksena */
 
 // Reittien kytkentä
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
-app.use('/cardaccount', cardsaccountsRouter);
-app.use('/accounts', accountsRouter);
-app.use('/log', logRouter);
+app.use('/auth', authRouter); // Autentikointi (login, logout)
+app.use('/atm', atmRouter); // ATM-toiminnot (normaalit käyttäjät)
+app.use('/users', usersRouter); // Admin: käyttäjien hallinta
+app.use('/cards', cardsRouter); // Admin: korttien hallinta
+app.use('/cardaccount', cardsaccountsRouter); // Admin: kortti-tili linkit
+app.use('/accounts', accountsRouter); // Admin: tilien hallinta
+app.use('/log', logRouter); // Admin: lokit
 
 // 404-handler
 app.use((req, res, next) => {
