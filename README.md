@@ -26,6 +26,8 @@
 
 ## Backend-osio
 
+[⬆️ Takaisin alkuun](#sisällysluettelo)
+
 ### API Käynnistys
 
 ```bash
@@ -37,6 +39,8 @@ npm start
 API pyörii osoitteessa: `http://localhost:3000`
 
 ### Autentikointi
+
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
 #### Kirjautuminen (Login)
 
@@ -87,6 +91,8 @@ Authorization: Bearer <token>
 ```
 
 ### REST API Endpoints
+
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
 #### ATM-toiminnot (User)
 
@@ -408,6 +414,8 @@ Authorization: Bearer <token>
 
 ### Backend status taulukko
 
+[⬆️ Takaisin alkuun](#sisällysluettelo)
+
 | Tilanne                                | Status                        |
 | -------------------------------------- | ----------------------------- |
 | GET onnistuu                           | **200 OK**                    |
@@ -421,6 +429,8 @@ Authorization: Bearer <token>
 | Odottamaton virhe                      | **500 Internal Server Error** |
 
 ### Role-järjestelmä (Admin vs User)
+
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
 Järjestelmässä on kaksi käyttäjäroolia:
 - **user** (oletus) - Tavallinen käyttäjä, pääsee `/atm/*` endpointeihin omilla tileillään
@@ -472,6 +482,8 @@ PORT=3000
 
 ### Database
 
+[⬆️ Takaisin alkuun](#sisällysluettelo)
+
 **Skeeman ja proseduurien alustus:**
 ```bash
 cd backend/db
@@ -483,6 +495,8 @@ sudo mysql -u root bank_db < seed.sql
 **Huom:** `seed.sql` sisältää testidatan (TESTUSER1 ja ADMIN käyttäjät)
 
 ### Tietokanta proseduurit
+
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
 #### 1) Käyttäjät
 #### 2) Tilit
@@ -684,6 +698,8 @@ CALL sp_read_account_logs(idaccount);
 ```
 
 ## Qt Widget (Frontend)
+
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
 ### Käynnistys
 
