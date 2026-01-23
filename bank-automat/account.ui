@@ -368,7 +368,7 @@ QHeaderView::section {
            <string notr="true"/>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="screenLogin">
            <widget class="QLabel" name="label_6">
@@ -591,13 +591,13 @@ QHeaderView::section {
             <property name="geometry">
              <rect>
               <x>90</x>
-              <y>360</y>
+              <y>390</y>
               <width>380</width>
-              <height>90</height>
+              <height>40</height>
              </rect>
             </property>
             <property name="text">
-             <string>Huom. Automaatissa vain 20 ja 50€ seteleitä</string>
+             <string>Huom. Automaatissa vain 20€ ja 50€ seteleitä</string>
             </property>
            </widget>
            <widget class="QLabel" name="labelNostaValitseVirhe">
