@@ -16,6 +16,8 @@
 #include <QVector>
 #include <QString>
 
+class QNetworkReply;
+
 // Represents a unified API error returned to the UI layer
 struct ApiError {
     int httpStatus = 0; // HTTP status code (e.g. 401, 500)
