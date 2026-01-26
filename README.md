@@ -1,6 +1,32 @@
 # Group 2 Project
 
+## Sisällysluettelo
+
+- [Backend-osio](#backend-osio)
+  - [API Käynnistys](#api-käynnistys)
+  - [Autentikointi](#autentikointi)
+  - [REST API Endpoints](#rest-api-endpoints)
+    - [ATM-toiminnot (User)](#atm-toiminnot-user)
+    - [Käyttäjät (Admin)](#käyttäjät-admin)
+    - [Kortit (Admin)](#kortit-admin)
+    - [Tilit (Admin)](#tilit-admin)
+    - [Kortit ja Tilit (Admin)](#kortit-ja-tilit-admin)
+    - [Logit (Admin)](#logit-admin)
+  - [Backend status taulukko](#backend-status-taulukko)
+  - [Role-järjestelmä (Admin vs User)](#role-järjestelmä-admin-vs-user)
+  - [Ympäristömuuttujat (.env)](#ympäristömuuttujat-env)
+  - [Database](#database)
+  - [Tietokanta proseduurit](#tietokanta-proseduurit)
+- [Qt Widget (Frontend)](#qt-widget-frontend)
+
+## Dokumentaatio
+
+- **[API_CONTRACT_v0.md](backend/API_CONTRACT_v0.md)** - Kattava API-dokumentaatio ja tekninen sopimus
+- **[SETUP_AUTOSTART.md](SETUP_AUTOSTART.md)** - PM2 automaattikäynnistys ja tuotantoasennus
+
 ## Backend-osio
+
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
 ### API Käynnistys
 
@@ -12,25 +38,209 @@ npm start
 
 API pyörii osoitteessa: `http://localhost:3000`
 
-### REST API Endpoints (CRUD)
+### Autentikointi
 
-#### Käyttäjät (Users)
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
-- **GET /users** - Hae kaikki käyttäjät
+#### Kirjautuminen (Login)
+
+- **POST /auth/login** - Kirjaudu sisään kortilla ja PIN-koodilla
+  ```json
+  {
+    "idCard": "CARD123456",
+    "pin": "1234"
+  }
+  ```
+  **Vastaus (200 OK):**
+  ```json
+  {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "card": {
+      "idCard": "CARD123456",
+      "idUser": "TESTUSER1",
+      "isLocked": false
+    },
+    "accounts": [
+      {
+        "idAccount": 14,
+        "type": "debit",
+        "balance": 500.00,
+        "creditLimit": 0.00
+      },
+      {
+        "idAccount": 15,
+        "type": "credit",
+        "balance": 0.00,
+        "creditLimit": 2000.00
+      }
+    ],
+    "requiresAccountSelection": true
+  }
+  ```
+
+#### Uloskirjautuminen (Logout)
+
+- **POST /auth/logout** - Kirjaudu ulos (token blacklistille)
+  - Vaatii: `Authorization: Bearer <token>` header
+
+#### Token käyttö
+
+Kaikki suojatut endpointit vaativat JWT-tokenin headerissa:
+```
+Authorization: Bearer <token>
+```
+
+### REST API Endpoints
+
+[⬆️ Takaisin alkuun](#sisällysluettelo)
+
+#### ATM-toiminnot (User)
+
+**Huom:** Vaativat JWT-tokenin ja omistajuuden tiliin
+
+- **GET /atm/:id** - Hae tilin saldo
+  ```json
+  {
+    "idAccount": 14,
+    "idUser": "TESTUSER1",
+    "balance": 500.00,
+    "creditLimit": 0.00
+  }
+  ```
+
+- **GET /atm/:id/logs** - Hae tilin tapahtumahistoria
+  ```json
+  {
+    "items": [
+      {
+        "idLog": 12,
+        "time": "2026-01-16T09:30:00.123000",
+        "balanceChange": -20.00
+      }
+    ]
+  }
+  ```
+
+- **POST /atm/:id/withdraw** - Nosta rahaa (debit-tili)
+  ```json
+  {
+    "amount": 40.00
+  }
+  ```
+  **Vastaus:**
+  ```json
+  {
+    "idAccount": 14,
+    "balance": 460.00,
+    "logged": true
+  }
+  ```
+
+- **POST /atm/:id/credit/withdraw** - Nosta rahaa (credit-tili)
+  ```json
+  {
+    "amount": 200.00
+  }
+  ```
+  **Vastaus:**
+  ```json
+  {
+    "idAccount": 15,
+    "balance": -200.00,
+    "logged": true
+  }
+  ```
+
+#### Käyttäjät (Admin)
+
+**Huom:** Vaativat JWT-tokenin ja `role: 'admin'`
+
 - **GET /users/:idUser** - Hae käyttäjä ID:llä
+  **Vastaus (200 OK)**
+  ```json
+  {
+    "idUser": "USER123",
+    "firstName": "Matti",
+    "lastName": "Meikäläinen",
+    "streetAddress": "Esimerkkitie 1",
+    "role": "user"
+  }
+  ```
+
 - **POST /users** - Luo uusi käyttäjä
   ```json
   {
     "idUser": "USER123",
     "firstName": "Matti",
     "lastName": "Meikäläinen",
-    "streetAddress": "Esimerkkitie 1"
+    "streetAddress": "Esimerkkitie 1",
+    "role": "user"
   }
   ```
-- **PUT /users/:idUser** - Päivitä käyttäjän tiedot
-- **DELETE /users/:idUser** - Poista käyttäjä
+  **Huom:** `role` kenttä on valinnainen (oletusarvo: "user"). Vaihtoehdot: "user" tai "admin".
+  
+  **Vastaus (201 Created)**
+  ```json
+  {
+    "idUser": "USER123",
+    "firstName": "Matti",
+    "lastName": "Meikäläinen",
+    "streetAddress": "Esimerkkitie 1",
+    "role": "user"
+  }
+  ```
 
-#### Kortit (Cards)
+- **PUT /users/:idUser** - Päivitä käyttäjän tiedot
+  ```json
+  {
+    "firstName": "Maija",
+    "lastName": "Virtanen",
+    "streetAddress": "Uusitie 5"
+  }
+  ```
+  **Vastaus (200 OK)**
+  ```json
+  {
+    "idUser": "USER123",
+    "firstName": "Maija",
+    "lastName": "Virtanen",
+    "streetAddress": "Uusitie 5"
+  }
+  ```
+
+- **DELETE /users/:idUser** - Poista käyttäjä
+  **Vastaus (204 No Content)**
+
+#### Kortit (Admin)
+
+**Huom:** Vaativat JWT-tokenin ja `role: 'admin'`
+
+- **GET /cards** - Hae kaikki kortit
+  **Vastaus (200 OK)**
+  ```json
+  [
+    {
+      "idCard": "CARD123456",
+      "idUser": "TESTUSER1",
+      "isLocked": false
+    },
+    {
+      "idCard": "ADMINCARD",
+      "idUser": "ADMIN",
+      "isLocked": false
+    }
+  ]
+  ```
+
+- **GET /cards/:idCard** - Hae kortti ID:llä
+  **Vastaus (200 OK)**
+  ```json
+  {
+    "idCard": "CARD123456",
+    "idUser": "TESTUSER1",
+    "isLocked": false
+  }
+  ```
 
 - **POST /cards** - Luo uusi kortti (PIN hashataan bcryptillä)
   ```json
@@ -40,21 +250,107 @@ API pyörii osoitteessa: `http://localhost:3000`
     "cardPIN": "1234"
   }
   ```
-- **GET /cards** - Hae kaikki kortit
-- **GET /cards/:idCard** - Hae kortti ID:llä
+  **Vastaus (201 Created)**
+  ```json
+  {
+    "idCard": "CARD789012",
+    "idUser": "USER123",
+    "isLocked": false
+  }
+  ```
+
 - **PUT /cards/:idCard/pin** - Päivitä kortin PIN
   ```json
   {
     "cardPIN": "5678"
   }
   ```
-- **DELETE /cards/:idCard** - Poista kortti
-- **POST /cards/:idCard/lock** - Lukitse kortti
-- **POST /cards/:idCard/unlock** - Avaa kortin lukitus
+  **Vastaus (200 OK)**
+  ```json
+  {
+    "message": "PIN updated successfully"
+  }
+  ```
 
-#### Kortit ja Tilit (Cards & Accounts)
+- **POST /cards/:idCard/lock** - Lukitse kortti
+  **Vastaus: (204 No Content)**
+
+- **POST /cards/:idCard/unlock** - Avaa kortin lukitus
+  **Vastaus: (204 No Content)**
+
+- **DELETE /cards/:idCard** - Poista kortti
+  **Vastaus: (204 No Content)**
+
+#### Tilit (Admin)
+
+**Huom:** Vaativat JWT-tokenin ja `role: 'admin'`
+
+- **GET /accounts/:id** - Hae tilin tiedot
+  **Vastaus (200 OK)**
+  ```json
+  {
+    "idAccount": 14,
+    "idUser": "TESTUSER1",
+    "balance": 500.00,
+    "creditLimit": 0.00
+  }
+  ```
+
+- **POST /accounts** - Luo uusi tili
+  ```json
+  {
+    "idUser": "TESTUSER1",
+    "balance": 1000.00,
+    "creditLimit": 500.00
+  }
+  ```
+  **Vastaus (201 Created)**
+  ```json
+  {
+    "idAccount": 16,
+    "idUser": "TESTUSER1",
+    "balance": 1000.00,
+    "creditLimit": 500.00
+  }
+  ```
+
+- **PUT /accounts/:id** - Päivitä tilin credit limit
+  ```json
+  {
+    "creditLimit": 3000.00
+  }
+  ```
+  **Vastaus (200 OK)**
+  ```json
+  {
+    "message": "Credit limit updated successfully"
+  }
+  ```
+
+- **DELETE /accounts/:id** - Poista tili
+  **Vastaus: 204 No Content**
+  
+  **Huom:** Tili ei voi olla linkitettynä kortteihin
+
+#### Kortit ja Tilit (Admin)
+
+**Huom:** Vaativat JWT-tokenin ja `role: 'admin'`
 
 - **GET /cardaccount/:idCard** - Hae kortin linkitetyt tilit
+  **Vastaus (200 OK)**
+  ```json
+  [
+    {
+      "idCard": "CARD123456",
+      "idAccount": 14
+    },
+    {
+      "idCard": "CARD123456",
+      "idAccount": 15
+    }
+  ]
+  ```
+
 - **POST /cardaccount** - Linkitä kortti tiliin
   ```json
   {
@@ -62,6 +358,13 @@ API pyörii osoitteessa: `http://localhost:3000`
     "idAccount": 1
   }
   ```
+  **Vastaus (201 Created)**
+  ```json
+  {
+    "message": "Card linked to account successfully"
+  }
+  ```
+
 - **PUT /cardaccount/:idCard** - Päivitä kortin tiliyhdistelmä
   ```json
   {
@@ -69,14 +372,24 @@ API pyörii osoitteessa: `http://localhost:3000`
     "newIdAccount": 2
   }
   ```
+  **Vastaus (200 OK)**
+  ```json
+  {
+    "message": "Card account link updated successfully"
+  }
+  ```
+
 - **DELETE /cardaccount/:idCard** - Poista kortin ja tilin linkki
   ```json
   {
     "IdAccount": 1
   }
   ```
+  **Vastaus: (204 No Content)**
 
-#### Logit (Logs)
+#### Logit (Admin)
+
+**Huom:** Vaativat JWT-tokenin ja `role: 'admin'`
 
 - **GET /log/:idAccount** - Hae tilin tapahtumalogit
   - Palauttaa kaikki tilin tapahtumat uusimmasta vanhimpaan
@@ -101,6 +414,8 @@ API pyörii osoitteessa: `http://localhost:3000`
 
 ### Backend status taulukko
 
+[⬆️ Takaisin alkuun](#sisällysluettelo)
+
 | Tilanne                                | Status                        |
 | -------------------------------------- | ----------------------------- |
 | GET onnistuu                           | **200 OK**                    |
@@ -113,26 +428,91 @@ API pyörii osoitteessa: `http://localhost:3000`
 | Duplikaatti (esim. kortti jo olemassa) | **409 Conflict**              |
 | Odottamaton virhe                      | **500 Internal Server Error** |
 
+### Role-järjestelmä (Admin vs User)
+
+[⬆️ Takaisin alkuun](#sisällysluettelo)
+
+Järjestelmässä on kaksi käyttäjäroolia:
+- **user** (oletus) - Tavallinen käyttäjä, pääsee `/atm/*` endpointeihin omilla tileillään
+- **admin** - Admin-käyttäjä, pääsee kaikkiin endpointeihin (`/users/*`, `/cards/*`, `/accounts/*`, `/log/*`, `/cardaccount/*`)
+
+**Admin-endpointit** (vaativat `role: 'admin'`):
+- `GET/POST/PUT/DELETE /users/*` - Käyttäjien hallinta
+- `GET/POST/PUT/DELETE /cards/*` - Korttien hallinta  
+- `GET/POST/PUT/DELETE /accounts/*` - Tilien hallinta
+- `GET/POST/PUT/DELETE /cardaccount/*` - Kortti-tili linkkien hallinta
+- `GET /log/*` - Lokien katselu
+
+**User-endpointit** (vaativat vain kirjautumisen ja omistajuuden):
+- `GET/POST /atm/*` - Omat tilit ja transaktiot
+
+**Testitunnukset:**
+- **Tavallinen käyttäjä**: Kortti: `CARD123456`, PIN: `1234`
+  - Debit-tili (ID: 14): 500.00 €
+  - Credit-tili (ID: 15): 2000.00 € luottoraja
+- **Admin-käyttäjä**: Kortti: `ADMINCARD`, PIN: `admin123`
+
+**Admin-käyttäjän luominen tietokantaan:**
+```sql
+-- Luo admin-käyttäjä
+CALL sp_create_user('admin1', 'Admin', 'User', 'Admin Street', 'admin');
+
+
+
+### Ympäristömuuttujat (.env)
+
+Luo `backend/.env` tiedosto:
+```env
+# Tietokanta
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=bank_db
+DB_PORT=3306
+
+# JWT
+JWT_SECRET=your-secret-key-here
+
+# PIN Pepper (lisäturvallisuus)
+PIN_PEPPER=your-pepper-here
+
+# Port
+PORT=3000
+```
+
 ### Database
 
-Suorita seed virtuaalikoneella:<br>
-mysql -u käyttäjä -p bank_db < seed.sql
+[⬆️ Takaisin alkuun](#sisällysluettelo)
+
+**Skeeman ja proseduurien alustus:**
+```bash
+cd backend/db
+sudo mysql -u root bank_db < schema.sql
+sudo mysql -u root bank_db < procedures.sql
+sudo mysql -u root bank_db < seed.sql
+```
+
+**Huom:** `seed.sql` sisältää testidatan (TESTUSER1 ja ADMIN käyttäjät)
+
 ### Tietokanta proseduurit
 
-## 1) Käyttäjät
-## 2) Tilit
-## 3) Kortit
-## 4) Transaktiot
-## 5) Luottotili
-## 6) Tapahtumalogit
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
-#### Tietokannan hallinta
+#### 1) Käyttäjät
+#### 2) Tilit
+#### 3) Kortit
+#### 4) Transaktiot
+#### 5) Luottotili
+#### 6) Tapahtumalogit
+
+#### Käyttäjien hallinta
 
 **Käyttäjän lisäys**
 ```sql
--- Lisää uuden käyttäjän
-CALL sp_create_user(iduser, fname, lname, streetaddress);
--- Esimerkki: CALL sp_create_user('user123', 'matti', 'meikalainen', 'meikatie 1');
+-- Lisää uuden käyttäjän (role valinnainen, oletusarvo 'user')
+CALL sp_create_user(iduser, fname, lname, streetaddress, role);
+-- Esimerkki: CALL sp_create_user('user123', 'Matti', 'Meikäläinen', 'Meikatie 1', 'user');
+-- Admin: CALL sp_create_user('admin1', 'Admin', 'User', 'Admin St', 'admin');
 ```
 
 **Käyttäjän poisto**
@@ -144,9 +524,10 @@ CALL sp_delete_user(iduser);
 
 **Käyttäjätietojen lukeminen**
 ```sql
--- Hakee käyttäjän tiedot
+-- Hakee käyttäjän tiedot (mukaan lukien role)
 CALL sp_read_user_info(iduser);
 -- Esimerkki: CALL sp_read_user_info('user123');
+-- Palauttaa: iduser, fname, lname, streetaddress, role
 ```
 
 **Käyttäjätietojen päivittäminen**
@@ -155,6 +536,8 @@ CALL sp_read_user_info(iduser);
 CALL sp_update_user_info(iduser, fname, lname, streetaddress);
 -- Esimerkki: CALL sp_update_user_info('user123', 'Maija', 'Meikäläinen', 'Uusitie 2');
 ```
+
+#### Tilien hallinta
 
 **Tilin lisäys**
 ```sql
@@ -189,10 +572,10 @@ CALL sp_create_card(idcard, iduser, hashed_pin);
 
 **Kortin tietojen lukeminen**
 ```sql
--- Hakee kortin tiedot (ilman PIN:iä)
+-- Hakee kortin tiedot (mukaan lukien cardPIN autentikoinnissa)
 CALL sp_read_card_info(idcard);
 -- Esimerkki: CALL sp_read_card_info('CARD123456');
--- Palauttaa: idcard, iduser, is_locked
+-- Palauttaa: idcard, cardPIN, iduser, is_locked
 ```
 
 **Kaikkien korttien lukeminen**
@@ -314,13 +697,39 @@ CALL sp_read_account_logs(idaccount);
 -- Palauttaa: idlog, idaccount, time, balancechange
 ```
 
-### Database
+## Qt Widget (Frontend)
 
-Suorita seed virtuaalikoneella:
-mysql -u käyttäjä -p bank_db < seed.sql
+[⬆️ Takaisin alkuun](#sisällysluettelo)
 
-## widget
+### Käynnistys
 
-Testitunnukset:
-user
-pass
+```bash
+cd bank-automat
+mkdir build
+cd build
+cmake ..
+make
+./bank_automat
+```
+
+### Kirjautuminen
+
+Sovellus pyytää kirjautumisessa:
+1. **Korttinumero** (esim. `CARD123456`)
+2. **PIN-koodi** (esim. `1234`)
+
+Kirjautumisen jälkeen valitaan tili (jos käyttäjällä on useita tilejä).
+
+### Testitunnukset
+
+- **Tavallinen käyttäjä**: Kortti: `CARD123456`, PIN: `1234`
+- **Admin-käyttäjä**: Kortti: `ADMINCARD`, PIN: `admin123`
+
+### Ominaisuudet
+
+- Korttinumeron ja PIN-koodin syöttö
+- Tilin valinta (kaksoiskortti)
+- Saldon tarkistus
+- Nostot (debit ja credit)
+- Tapahtumahistoria
+- Automaattinen uloskirjautuminen (timeout)

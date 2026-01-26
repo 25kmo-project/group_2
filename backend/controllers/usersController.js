@@ -11,6 +11,7 @@ function mapUserRow(row) {
         firstName: row.fname,
         lastName: row.lname,
         streetAddress: row.streetaddress,
+        role: row.role || 'user',
     };
 }
 
@@ -71,21 +72,22 @@ async function getUserById(req, res, next) {
 // Luo käyttäjän proseduurilla
 async function createUser(req, res, next) {
     try {
-        const { idUser, firstName, lastName, streetAddress } = req.body ?? {};
+        const { idUser, firstName, lastName, streetAddress, role } = req.body ?? {};
         if (!idUser) throw new AppError('idUser is required', 400);
         if (!firstName || !lastName || !streetAddress) {
             throw new AppError('firstName, lastName and streetAddress are required', 400);
         }
         
-        // Proseduurin haku
-        await pool.execute('CALL sp_create_user(?, ?, ?, ?)', [
+        // Proseduurin haku (role optional, defaults to 'user')
+        await pool.execute('CALL sp_create_user(?, ?, ?, ?, ?)', [
             idUser,
             firstName,
             lastName,
             streetAddress,
+            role || 'user',
         ]);
         
-        res.status(201).json({ idUser, firstName, lastName, streetAddress });
+        res.status(201).json({ idUser, firstName, lastName, streetAddress, role: role || 'user' });
     } catch (err) {
         const mapped = mapProcedureSignalToHttp(err);
         if (mapped) return next(mapped);

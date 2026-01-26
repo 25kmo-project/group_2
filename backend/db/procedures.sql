@@ -13,10 +13,15 @@ CREATE PROCEDURE sp_create_user(
   IN p_iduser VARCHAR(45),
   IN p_fname VARCHAR(45),
   IN p_lname VARCHAR(45),
-  IN p_streetaddress VARCHAR(45)
+  IN p_streetaddress VARCHAR(45),
+  IN p_role VARCHAR(20)
 )
 BEGIN
   DECLARE v_exists INT;
+  DECLARE v_role_value VARCHAR(20);
+
+  -- Default role to 'user' if not provided
+  SET v_role_value = COALESCE(p_role, 'user');
 
   START TRANSACTION;
 
@@ -31,9 +36,9 @@ BEGIN
       SET MESSAGE_TEXT = 'User already exists';
   END IF;
 
-  -- Insert new user
-  INSERT INTO users (iduser, fname, lname, streetaddress)
-  VALUES (p_iduser, p_fname, p_lname, p_streetaddress);
+  -- Insert new user with role
+  INSERT INTO users (iduser, fname, lname, streetaddress, role)
+  VALUES (p_iduser, p_fname, p_lname, p_streetaddress, v_role_value);
 
   COMMIT;
 END$$
@@ -121,8 +126,8 @@ BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User not found';
   END IF;
 
-  -- Retrieve user info
-  SELECT iduser, fname, lname, streetaddress
+  -- Retrieve user info including role
+  SELECT iduser, fname, lname, streetaddress, role
   FROM users
   WHERE iduser = p_iduser;
 END$$
@@ -385,8 +390,8 @@ BEGIN
       SET MESSAGE_TEXT = 'Card not found';
   END IF;
 
-  -- Return card info (without PIN for security)
-  SELECT idcard, iduser, is_locked
+  -- Return card info 
+  SELECT idcard, cardPIN, iduser, is_locked
   FROM cards
   WHERE idcard = p_idcard;
 END$$
@@ -474,7 +479,7 @@ BEGIN
 END$$
 DELIMITER ;
 
---ADD CARD TO ACCOUNT
+-- ADD CARD TO ACCOUNT
 -- example CALL sp_card_to_account(idcard, idaccount);
 
 DELIMITER $$
@@ -544,7 +549,7 @@ BEGIN
 END$$
 DELIMITER ;
 
---REMOVE CARD FROM ACCOUNT
+-- REMOVE CARD FROM ACCOUNT
 -- example CALL sp_remove_card_from_account(idcard, idaccount);
 
 DELIMITER $$

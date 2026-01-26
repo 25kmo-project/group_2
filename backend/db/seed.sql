@@ -13,9 +13,13 @@ DELETE FROM users;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- Admin-käyttäjä
+INSERT INTO users (iduser, fname, lname, streetaddress, role)
+VALUES ('ADMIN', 'Admin', 'User', 'Admin Street 1', 'admin');
+
 -- Testikäyttäjä
-INSERT INTO users (iduser, fname, lname, streetaddress)
-VALUES ('TESTUSER1', 'Testi', 'Asiakas', 'Testikatu 1');
+INSERT INTO users (iduser, fname, lname, streetaddress, role)
+VALUES ('TESTUSER1', 'Testi', 'Asiakas', 'Testikatu 1', 'user');
 
 -- Debit-tili
 INSERT INTO accounts (iduser, balance, creditlimit)
@@ -27,11 +31,20 @@ INSERT INTO accounts (iduser, balance, creditlimit)
 VALUES ('TESTUSER1', 0.00, 2000.00);
 SET @credit_account_id = LAST_INSERT_ID();
 
--- Kortti, is_locked = 0
+-- Admin-kortti (PIN: admin123)
+INSERT INTO cards (idcard, cardPIN, iduser, is_locked)
+VALUES (
+    'ADMINCARD',
+    '$2b$10$I6vM3OpkhevRgFMdAksoLOCRuOWbwY7RAZYQ2HhpQL/dfacAwv0Xa',
+    'ADMIN',
+    0
+);
+
+-- Testikäyttäjän kortti (PIN: 1234), is_locked = 0
 INSERT INTO cards (idcard, cardPIN, iduser, is_locked)
 VALUES (
     'CARD123456',
-    '$2b$10$raFg/F.nby0A9jB1VLCgJOZrrwjXq8igIxcrAyHed20Ev4pnmLwOS',
+    '$2b$10$DMquyzBwPOXOLK.gY14gD.2/TmPGXrUagN2kbkyu81OOB/1MoCb9C',
     'TESTUSER1',
     0
 );

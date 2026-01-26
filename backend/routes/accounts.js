@@ -3,6 +3,8 @@
 // Express ja router
 const express = require('express');
 const router = express.Router();
+const { authenticateToken } = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/authorize');
 
 // Controller-funktioiden tuonti
 const {
@@ -12,11 +14,11 @@ const {
     deleteAccount,
 } = require('../controllers/accountsController');
 
-// Reittien määrittely
-router.get('/:id', getAccountById); // READ - hakee tilin
-router.post('/', createAccount); // CREATE - tekee tilin
-router.put('/:id', updateAccountCreditLimit); // UPDATE - päivittää tilin creditlimitin tiedot
-router.delete('/:id', deleteAccount); // DELETE - poistaa tilin
+// Admin-reitit - vain admin voi hallita kaikkia tilejä
+router.get('/:id', authenticateToken, requireAdmin, getAccountById); // READ - hakee tilin
+router.post('/', authenticateToken, requireAdmin, createAccount); // CREATE - tekee tilin
+router.put('/:id', authenticateToken, requireAdmin, updateAccountCreditLimit); // UPDATE - päivittää tilin creditlimitin tiedot
+router.delete('/:id', authenticateToken, requireAdmin, deleteAccount); // DELETE - poistaa tilin
 
 // Routerin export
 module.exports = router;

@@ -1,14 +1,16 @@
-// Tämä tiedosto on Express-reititin log-resurssille
+// This file is an Express router for the log resource
 
-// Express ja router
+// Express and router
 const express = require('express');
 const router = express.Router();
+const { authenticateToken } = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/authorize');
 
-// Controller-funktioiden tuonti
+// Controller function import
 const { getLogsByAccount } = require('../controllers/logController');
 
-// Reittien määrittely
-router.get('/:idAccount', getLogsByAccount); // READ - hakee tilin tapahtumalogit
+// Admin routes - only admin can view logs
+router.get('/:idAccount', authenticateToken, requireAdmin, getLogsByAccount); // READ - hakee tilin tapahtumalogit
 
 // Routerin export
 module.exports = router;
