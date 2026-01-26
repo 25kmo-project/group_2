@@ -13,10 +13,8 @@
   <property name="windowTitle">
    <string>Pankkiautomaatti</string>
   </property>
-
-  <!-- ATM theme directly in UI -->
   <property name="styleSheet">
-   <string notr="true"><![CDATA[
+   <string notr="true">
 /* =========================
    ATM THEME (MainWindow.ui)
    ========================= */
@@ -24,7 +22,7 @@
 /* Base */
 QWidget#centralwidget {
     background: transparent;
-    font-family: "Segoe UI";
+    font-family: &quot;Segoe UI&quot;;
     font-size: 16px;
 }
 
@@ -80,7 +78,12 @@ QLineEdit#user::placeholder, QLineEdit#password::placeholder {
 
 /* Error */
 QLabel#errorLabel {
-    color: #B00020;
+    color: #FF3B30;                         /* kirkas punainen */
+    background-color: rgba(255, 59, 48, 28); /* kevyt punainen tausta */
+    border: 1px solid rgba(255, 59, 48, 90);
+    border-radius: 10px;
+    padding: 6px 10px;
+
     font-size: 13px;
     font-weight: 800;
 }
@@ -107,7 +110,7 @@ QPushButton#KirjauduButton:hover {
 }
 
 QPushButton#KirjauduButton:pressed {
-    /* pressed: painuu alas -> vaihda border-bottom pienemmäksi */
+    /* pressed: painuu alas -&gt; vaihda border-bottom pienemmäksi */
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                                 stop:0 #1E47D6,
                                 stop:1 #16339E);
@@ -115,9 +118,8 @@ QPushButton#KirjauduButton:pressed {
     padding-top: 13px;  /* pieni “painallus” */
     padding-bottom: 11px;
 }
-]]></string>
+</string>
   </property>
-
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="rootLayout">
     <property name="leftMargin">
@@ -132,11 +134,10 @@ QPushButton#KirjauduButton:pressed {
     <property name="bottomMargin">
      <number>0</number>
     </property>
-
     <item>
      <spacer name="topSpacer">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -146,8 +147,7 @@ QPushButton#KirjauduButton:pressed {
       </property>
      </spacer>
     </item>
-
-    <item alignment="Qt::AlignHCenter">
+    <item alignment="Qt::AlignmentFlag::AlignHCenter">
      <widget class="QFrame" name="loginCard">
       <property name="minimumSize">
        <size>
@@ -162,7 +162,7 @@ QPushButton#KirjauduButton:pressed {
        </size>
       </property>
       <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+       <enum>QFrame::Shape::NoFrame</enum>
       </property>
       <layout class="QVBoxLayout" name="loginCardLayout">
        <property name="spacing">
@@ -180,29 +180,26 @@ QPushButton#KirjauduButton:pressed {
        <property name="bottomMargin">
         <number>22</number>
        </property>
-
        <item>
         <widget class="QLabel" name="welcomeLabel">
          <property name="text">
           <string>TERVETULOA</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
-
        <item>
         <widget class="QLabel" name="subtitleLabel">
          <property name="text">
           <string>KIRJAUDU SISÄÄN</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
-
        <item>
         <widget class="QLabel" name="userLabel">
          <property name="text">
@@ -210,7 +207,6 @@ QPushButton#KirjauduButton:pressed {
          </property>
         </widget>
        </item>
-
        <item>
         <widget class="QLineEdit" name="user">
          <property name="minimumSize">
@@ -224,7 +220,6 @@ QPushButton#KirjauduButton:pressed {
          </property>
         </widget>
        </item>
-
        <item>
         <widget class="QLabel" name="passLabel">
          <property name="text">
@@ -232,7 +227,6 @@ QPushButton#KirjauduButton:pressed {
          </property>
         </widget>
        </item>
-
        <item>
         <widget class="QLineEdit" name="password">
          <property name="minimumSize">
@@ -242,14 +236,13 @@ QPushButton#KirjauduButton:pressed {
           </size>
          </property>
          <property name="echoMode">
-          <enum>QLineEdit::Password</enum>
+          <enum>QLineEdit::EchoMode::Password</enum>
          </property>
          <property name="placeholderText">
           <string>••••••</string>
          </property>
         </widget>
        </item>
-
        <item>
         <widget class="QLabel" name="errorLabel">
          <property name="visible">
@@ -259,14 +252,13 @@ QPushButton#KirjauduButton:pressed {
           <string>Virheellinen käyttäjätunnus tai salasana</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
          </property>
         </widget>
        </item>
-
        <item>
         <widget class="QPushButton" name="KirjauduButton">
          <property name="minimumSize">
@@ -280,15 +272,13 @@ QPushButton#KirjauduButton:pressed {
          </property>
         </widget>
        </item>
-
       </layout>
      </widget>
     </item>
-
     <item>
      <spacer name="bottomSpacer">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
@@ -298,7 +288,6 @@ QPushButton#KirjauduButton:pressed {
       </property>
      </spacer>
     </item>
-
    </layout>
   </widget>
  </widget>
