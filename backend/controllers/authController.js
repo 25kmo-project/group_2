@@ -39,7 +39,7 @@ async function login(req, res, next) {
 
         // Verify PIN with pepper (cardPIN already retrieved from sp_read_card_info)
         const pepperedPIN = pin + config.pinPepper;
-        const isMatch = await bcrypt.compare(pepperedPIN, card.cardpin);
+        const isMatch = await bcrypt.compare(pepperedPIN, card.cardPIN); // Korjattu virhe
 
         if (!isMatch) {
             throw new AppError('Invalid credentials', 401);

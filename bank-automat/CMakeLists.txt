@@ -3,7 +3,7 @@ project(bank-automat LANGUAGES CXX)
 
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg Network)
 
 qt_standard_project_setup()
 
@@ -18,6 +18,8 @@ qt_add_executable(bank-automat
     account.h account.cpp account.ui
     logevents.h logevents.cpp
     logs.h logs.cpp
+    apiclient.cpp
+    apiclient.h
 )
 
 target_link_libraries(bank-automat
@@ -25,6 +27,7 @@ target_link_libraries(bank-automat
         Qt::Core
         Qt::Widgets
         Qt::Svg
+        Qt::Network
 )
 
 include(GNUInstallDirs)
