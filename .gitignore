@@ -4,5 +4,6 @@ bank-automat/*.user
 node_modules/
 .qtcreator/
 .env
+.envgit
 backend/logs/
 .github/*.md

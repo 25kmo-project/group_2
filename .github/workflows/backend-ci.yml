@@ -1,0 +1,78 @@
+## Backend CI/CD workflow
+## when pushed to main or pull request to main
+## runs 
+## - tests for api endpoints
+## - Linting for code style
+## - Audits dependencies for vulnerabilities
+## on success deploys to server via SSH
+## and restarts pm2 process
+
+name: backend CI
+
+on:
+    push:
+        branches: [ main ]
+        paths:
+            - 'backend/**'
+    pull_request:
+        branches: [ main ]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: ./backend
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
+                  cache-dependency-path: backend/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+            
+            - name: Security audit
+              run: npm audit --audit-level=moderate
+
+            - name: Run tests
+              run: npm test -- --ci
+
+            - name: Check if lint script exists
+              run: |
+                if grep -q '"lint"' package.json; then
+                  npm run lint
+                else
+                  echo "⚠️ No lint script found, skipping"
+                fi
+
+    deploy:
+        needs: test
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        steps:
+            - name: Deploy to server via SSH
+              uses: appleboy/ssh-action@v0.1.6
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  script: |
+                      cd /home/ubuntu/pankkiautomaatti/group_2/backend
+                      git pull origin main
+                      npm ci --production
+                      
+                      # Luo .env tiedosto secretseistä
+                      echo "DB_HOST=${{ secrets.DB_HOST }}" > .env
+                      echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+                      echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+                      echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+                      echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+                      echo "PIN_PEPPER=${{ secrets.PIN_PEPPER }}" >> .env
+                      
+                      pm2 reload backend --update-env
