@@ -184,7 +184,7 @@ QPushButton#btnSelectCredit:pressed {
       <item>
        <widget class="QLabel" name="hintLabel">
         <property name="text">
-         <string>Valitse Debit tai Credit -toiminto jatkaaksesi.</string>
+         <string>Valitse kortti jatkaaksesi.</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
