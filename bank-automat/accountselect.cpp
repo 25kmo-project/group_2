@@ -18,6 +18,13 @@ accountselect::accountselect(
     ui->setupUi(this);
     
     ui->labelTest->setText("Käyttäjä: " + m_login.idUser);
+    
+    for (const AccountDto& acc : m_login.accounts) {
+        accountIdByType[acc.type.toLower()] = acc.idAccount;
+    }
+    
+    ui->btnSelectDebit->setEnabled(accountIdByType.contains("debit"));
+    ui->btnSelectCredit->setEnabled(accountIdByType.contains("credit"));
 }
 
 accountselect::~accountselect()
@@ -39,11 +46,20 @@ void accountselect::on_btnSelectCredit_clicked()
 
 void accountselect::openAccountWindow()
 {
-    account* accountWindow = new account(m_login.idCard, selectedAccountType, nullptr);
+    const int accountId = accountIdByType.value(selectedAccountType, -1);
+    if (accountId < 0) {
+        return;
+    }
+    
+    account* accountWindow = new account(
+        m_login.idCard,
+        selectedAccountType,
+        nullptr
+    );
+    
     accountWindow->setAttribute(Qt::WA_DeleteOnClose);
     accountWindow->showMaximized();
-    
-    this->close();
+    close();
 }
 
 void accountselect::paintEvent(QPaintEvent *)

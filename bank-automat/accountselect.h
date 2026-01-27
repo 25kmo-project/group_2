@@ -2,6 +2,7 @@
 #define ACCOUNTSELECT_H
 
 #include <QDialog>
+#include <QMap>
 
 #include "apiclient.h"
 
@@ -35,6 +36,7 @@ class accountselect : public QDialog
     LoginResultDto m_login;
     
     QString selectedAccountType;
+    QMap<QString, int> accountIdByType;
     
     void openAccountWindow();
 };
