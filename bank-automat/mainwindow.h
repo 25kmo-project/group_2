@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QAction>
 
 #include "apiclient.h"
 #include "accountselect.h"
@@ -27,6 +28,9 @@ class MainWindow : public QMainWindow
     void on_KirjauduButton_clicked();
     
     private:
+    QAction* togglePasswordAction = nullptr;
+    bool passwordVisible = false;
+
     Ui::MainWindow *ui;
     
     bool isSplashScreen;

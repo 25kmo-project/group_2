@@ -12,6 +12,24 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     
+    togglePasswordAction = new QAction(this);
+    togglePasswordAction->setIcon(QIcon(":/images/silmak.svg"));
+    ui->password->addAction(togglePasswordAction, QLineEdit::TrailingPosition);
+    
+    connect(togglePasswordAction, &QAction::triggered, this, [this]() {
+        passwordVisible = !passwordVisible;
+        
+        ui->password->setEchoMode(
+            passwordVisible ? QLineEdit::Normal : QLineEdit::Password
+        );
+        
+        togglePasswordAction->setIcon(
+            QIcon(passwordVisible
+                ? ":/images/silmaa.svg"
+                : ":/images/silmak.svg")
+            );
+    });
+
     api = new ApiClient(this);
     api->setBaseUrl(QUrl("http://127.0.0.1:3000"));
 
@@ -72,10 +90,14 @@ void MainWindow::showMainScreen()
 void MainWindow::setMainControlsVisible(bool visible)
 {
     ui->loginCard->setVisible(visible);
-    
     ui->errorLabel->setVisible(false);
     
     if (visible) {
+        passwordVisible = false;
+        ui->password->clear();
+        ui->password->setEchoMode(QLineEdit::Password);
+        togglePasswordAction->setIcon(QIcon(":/images/silmak.svg"));
+        
         ui->user->setFocus();
     }
 }
