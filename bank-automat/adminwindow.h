@@ -19,8 +19,18 @@ private:
     Ui::adminwindow *ui;
     QString user;
 
+    class userdata *userData;
+    class accountsdata *accountsData;
+
+    QByteArray testUserData;
+    QByteArray testAccountsData;
+
 protected:
     void paintEvent(QPaintEvent *event) override;
+private slots:
+    void on_btnAsiakkaatLowBar_clicked();
+    void on_btnTilitLowBar_clicked();
+    void on_btnKortitLowBar_clicked();
 };
 
 #endif // ADMINWINDOW_H
