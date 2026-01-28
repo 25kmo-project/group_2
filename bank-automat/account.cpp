@@ -28,7 +28,8 @@ bool account::isValidBillAmount(double amount) const
 bool account::hasSufficientFunds(double amount) const
 {
     const bool isCredit = creditlimit > 0.0;
-    if (!isCredit) return amount <= saldo;    
+    if (!isCredit) return amount <= saldo;
+    // credit: allow withdrawing up to remaining credit
     return amount <= (creditlimit - saldo);
 }
 
@@ -74,14 +75,18 @@ account::account(int idAccount, const QString& idUser, const QString& fName, Api
     ui->tableTapahtumat->verticalHeader()->setVisible(false);
     ui->tableTapahtumat->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
+    // React to successful balance retrieval from the backend
     connect(m_api, &ApiClient::balanceReceived, this,
         [this](int idAccount, double balance, double creditLimit)
         {
+            // Ignore events for other accounts
             if (idAccount != m_idAccount) return;
             
+            // Update internal state
             saldo = balance;
             creditlimit = creditLimit;
             
+            // Update UI only if the balance screen is currently visible
             if (ui->stackedAccount->currentWidget() == ui->screenSaldo) {
                 ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo));
                 ui->labelSaldoCreditLimit->setText(QString::asprintf("%.2f €", creditlimit));
@@ -90,12 +95,16 @@ account::account(int idAccount, const QString& idUser, const QString& fName, Api
         }
     );
     
+    // React to a successful withdrawal (debit or credit)
     connect(m_api, &ApiClient::withdrawSucceeded, this,
         [this](int idAccount, double newBalance)
         {
+            // Ignore events for other accounts
             if (idAccount != m_idAccount) return;
+            // Update local balance
             saldo = newBalance;
             
+            // Update UI only if the balance screen is currently visible
             if (ui->stackedAccount->currentWidget() == ui->screenSaldo) {
                 ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo));
                 ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit - saldo));
@@ -103,11 +112,14 @@ account::account(int idAccount, const QString& idUser, const QString& fName, Api
         }
     );
     
+    // React to successful retrieval of account transaction logs
     connect(m_api, &ApiClient::logsReceived, this,
         [this](int idAccount, const QVector<LogItemDto>& logs)
         {
+            // Ignore events for other accounts
             if (idAccount != m_idAccount) return;
             
+            // Convert log DTOs into a JSON array
             QJsonArray arr;
             for (const auto& item : logs) {
                 QJsonObject o;
@@ -116,14 +128,17 @@ account::account(int idAccount, const QString& idUser, const QString& fName, Api
                 o["balancechange"] = item.balanceChange;
                 arr.append(o);
             }
+            // Serialize JSON to bytes and pass it to the log view component
             const QByteArray jsonBytes = QJsonDocument(arr).toJson(QJsonDocument::Compact);
             tapahtumat->setLog(jsonBytes);
         }
     );
     
+    // React to any API error (network, validation, backend failure)
     connect(m_api, &ApiClient::requestFailed, this,
         [this](const ApiError& err)
         {
+            // Show a withdrawal-related error message in the UI
             showWithdrawError(
                 ui->labelNostaValitseVirhe_2,
                 err.message.isEmpty() ? "Tapahtui virhe" : err.message
@@ -314,43 +329,59 @@ void account::on_btnTapahtumatOikea_clicked()
 }
 
 
+// Called when the user clicks the "Confirm Withdrawal" button
 void account::on_btnNostaVahvistaVahvista_clicked()
 {
+    // Amount to withdraw (already validated earlier)
     const double amount = nostosumma;
+    // Determine whether this is a credit account
+    // Credit accounts have a positive credit limit
     const bool isCredit = creditlimit > 0.0;
     
+    // Call the appropriate API endpoint based on account type
     if (isCredit) {
+        // Credit withdrawal
         m_api->withdrawCredit(m_idAccount, amount);
     } else {
+        // Debit withdrawal
         m_api->withdrawDebit(m_idAccount, amount);
     }
     
+    // After sending the request, switch back to the login / idle screen
+    // (actual balance update happens asynchronously via signals)
     ui->stackedAccount->setCurrentWidget(ui->screenLogin);
 }
 
+// Handle keyboard input globally for this dialog
 void account::keyPressEvent(QKeyEvent *event)
 {
+    // Check if the current screen is the withdrawal selection screen
     const bool onWithdrawSelect =
     (ui->stackedAccount->currentWidget() == ui->screenNostaValitse);
     
+    // Handle Enter / Return key specifically on the withdraw selection screen
     if (onWithdrawSelect &&
         (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter))
         {
+            // If the amount input does not have focus, move focus to it
             if (!ui->labelNostosumma->hasFocus()) {
                 ui->labelNostosumma->setFocus();
                 event->accept();
                 return;
             }
             
+            // If the amount field has text, treat Enter as "confirm custom amount"
             if (!ui->labelNostosumma->text().trimmed().isEmpty()) {
                 on_btnNostaMuu_clicked();
                 event->accept();
                 return;
             }
             
+            // Consume the event even if nothing else happens
             event->accept();
             return;
         }
         
+        // For all other keys and screens, use default dialog behavior
         QDialog::keyPressEvent(event);
     }
