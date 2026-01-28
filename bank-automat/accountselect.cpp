@@ -26,7 +26,7 @@ accountselect::accountselect(
     ui->setupUi(this);
     
     // Display the logged-in user's identifier
-    ui->labelTest->setText("Käyttäjä: " + m_login.idUser);
+    ui->labelTest->setText("Käyttäjä: " + m_login.fName);
     
     // Build a map from account type ("debit"/"credit") to account ID
     for (const AccountDto& acc : m_login.accounts) {
@@ -72,6 +72,8 @@ void accountselect::openAccountWindow()
     // Create the account window
     account* accountWindow = new account(
         idAccount,
+        m_login.idUser,
+        m_login.fName,
         m_api,
         nullptr
     );

@@ -44,17 +44,19 @@ void account::showWithdrawError(QLabel *label, const QString &text, int ms)
     });
 }
 
-account::account(int idAccount, ApiClient* api, QWidget *parent)
+account::account(int idAccount, const QString& idUser, const QString& fName, ApiClient* api, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::account)
     , m_api(api)
     , m_idAccount(idAccount)
+    , m_idUser(idUser)
+    , m_fName(fName)
 {
     ui->setupUi(this);
     m_api->getBalance(m_idAccount);
     ui->stackedAccount->setCurrentWidget(ui->screenLogin);
 
-    ui->labelLoginCardnumber->setText(QString("Tili #%1").arg(m_idAccount));
+    ui->labelLoginCardnumber->setText("Käyttäjä: " + m_fName);
 
     tapahtumat = new logs(this);
     ui->tableTapahtumat->setModel(tapahtumat->getModel());

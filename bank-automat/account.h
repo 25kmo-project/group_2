@@ -23,13 +23,15 @@ class account : public QDialog
     Q_OBJECT
 
 public:
-    explicit account(int idAccount, ApiClient* api, QWidget *parent = nullptr);
+    explicit account(int idAccount, const QString& idUser, const QString& fName, ApiClient* api, QWidget *parent = nullptr);
     ~account();
 
 private:
     Ui::account *ui;
     ApiClient* m_api = nullptr;
     int m_idAccount = 0;
+    QString m_idUser;
+    QString m_fName;
     logs* tapahtumat = nullptr;
     double saldo = 0.0;
     double creditlimit = 0.0;
