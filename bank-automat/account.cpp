@@ -183,11 +183,12 @@ void account::on_btnNostaRahaa_clicked()
     ui->labelNostaValitseVirhe->hide();
     ui->labelNostaValitseKate->hide();
     ui->labelNostaValitseVirhe_2->hide();
+    ui->labelNostosumma->clear();
 
     //kursori summakenttaään
     ui->labelNostosumma->setFocus();
     //mahdollisuus entteriä painamalla valita muu summa
-    connect(ui->labelNostosumma, &QLineEdit::returnPressed, this, &account::on_btnNostaMuu_clicked);
+    connect(ui->labelNostosumma, &QLineEdit::returnPressed, this, &account::on_btnNostaMuu_clicked, Qt::UniqueConnection);
 }
 
 
@@ -324,3 +325,30 @@ void account::on_btnNostaVahvistaVahvista_clicked()
     
     ui->stackedAccount->setCurrentWidget(ui->screenLogin);
 }
+
+void account::keyPressEvent(QKeyEvent *event)
+{
+    const bool onWithdrawSelect =
+    (ui->stackedAccount->currentWidget() == ui->screenNostaValitse);
+    
+    if (onWithdrawSelect &&
+        (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter))
+        {
+            if (!ui->labelNostosumma->hasFocus()) {
+                ui->labelNostosumma->setFocus();
+                event->accept();
+                return;
+            }
+            
+            if (!ui->labelNostosumma->text().trimmed().isEmpty()) {
+                on_btnNostaMuu_clicked();
+                event->accept();
+                return;
+            }
+            
+            event->accept();
+            return;
+        }
+        
+        QDialog::keyPressEvent(event);
+    }

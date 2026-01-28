@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include <QTimer>
 #include <QLabel>
+#include <QKeyEvent>
 #include "logs.h"
 #include "apiclient.h"
 
@@ -47,6 +48,7 @@ private:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 private slots:
     void on_btnSaldo_clicked();
     void on_btnTapahtumat_clicked();
