@@ -15,19 +15,19 @@ adminwindow::adminwindow(QString user, QWidget *parent)
 
     //testidataa käyttäjätaulua varten
     testUserData = R"([
-    {"iduser": 1, "fname": "Aku", "lname": "Ankka", "streetaddress": "Paratiisitie 13"},
-    {"iduser": 2, "fname": "Roope", "lname": "Ankka", "streetaddress": "Rahasäiliö 1"},
-    {"iduser": 3, "fname": "Mikki", "lname": "Hiiri", "streetaddress": "Jokikatu 43"},
-    {"iduser": 4, "fname": "Hessu", "lname": "Hopo", "streetaddress": "Koivukatu 7"}
+    {"iduser": "1", "fname": "Aku", "lname": "Ankka", "streetaddress": "Paratiisitie 13"},
+    {"iduser": "2", "fname": "Roope", "lname": "Ankka", "streetaddress": "Rahasäiliö 1"},
+    {"iduser": "3", "fname": "Mikki", "lname": "Hiiri", "streetaddress": "Jokikatu 43"},
+    {"iduser": "4", "fname": "Hessu", "lname": "Hopo", "streetaddress": "Koivukatu 7"}
     ])";
 
     testAccountsData = R"([
-    {"idaccount": 1, "iduser": 1, "balance": "500", "credilimit": "0"},
-    {"idaccount": 2, "iduser": 2, "balance": "10000000", "creditlimit": "0"},
-    {"idaccount": 3, "iduser": 2, "balance": "10000", "creditlimit": "50000"},
-    {"idaccount": 4, "iduser": 3, "balance": "25000", "creditlimit": "0"},
-    {"idaccount": 5, "iduser": 3, "balance": "250", "creditlimit": "1500"},
-    {"idaccount": 6, "iduser": 4, "balance": "1000", "creditlimit": "0"}
+    {"idaccount": 1, "iduser": "1", "balance": 500, "credilimit": 0},
+    {"idaccount": 2, "iduser": "2", "balance": 1000000, "creditlimit": 0},
+    {"idaccount": 3, "iduser": "2", "balance": 10000, "creditlimit": 50000},
+    {"idaccount": 4, "iduser": "3", "balance": 25000, "creditlimit": 0},
+    {"idaccount": 5, "iduser": "3", "balance": 250, "creditlimit": 1500},
+    {"idaccount": 6, "iduser": "4", "balance": 1000, "creditlimit": 0}
     ])";
 
     userData = new userdata(this);
@@ -37,8 +37,6 @@ adminwindow::adminwindow(QString user, QWidget *parent)
     accountsData = new accountsdata(this);
     ui->tableAccountsData->setModel(accountsData->getModel());
     accountsData->setAccountsData(testAccountsData);
-
-
 }
 
 adminwindow::~adminwindow()

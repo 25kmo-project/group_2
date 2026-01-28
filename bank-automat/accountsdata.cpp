@@ -39,9 +39,17 @@ void accountsdata::updateModel()
 
     for (int row = 0; row < accountsDataList.size(); row++) {
         const accounts &accounts = accountsDataList[row];
-        tableModel->setItem(row,0, new QStandardItem(accounts.idaccount));
-        tableModel->setItem(row,1, new QStandardItem(accounts.iduser));
-        tableModel->setItem(row,2, new QStandardItem(accounts.balance));
-        tableModel->setItem(row,3, new QStandardItem(accounts.creditlimit));
+        QStandardItem *idAccountItem = new QStandardItem(QString::number(accounts.idaccount));
+        idAccountItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+        tableModel->setItem(row,0, idAccountItem);
+        QStandardItem *idUserItem = new QStandardItem(accounts.iduser);
+        idUserItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+        tableModel->setItem(row,1, idUserItem);
+        QStandardItem *balanceItem = new QStandardItem(QString::asprintf("%.2f €", accounts.balance));
+        balanceItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        tableModel->setItem(row,2, balanceItem);
+        QStandardItem *creditItem = new QStandardItem(QString::asprintf("%.2f €", accounts.creditlimit));
+        creditItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        tableModel->setItem(row,3, creditItem);
     }
-}
+ }
