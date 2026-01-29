@@ -3,6 +3,9 @@
 #include <qpainter.h>
 #include <cmath>
 #include <QRegularExpression>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 #include <QStandardItemModel>
 
@@ -24,7 +27,8 @@ bool account::isValidBillAmount(double amount) const
 
 bool account::hasSufficientFunds(double amount) const
 {
-    if (cardtype == "debit") return amount <= saldo;
+    const bool isCredit = creditlimit > 0.0;
+    if (!isCredit) return amount <= saldo;
     // credit: allow withdrawing up to remaining credit
     return amount <= (creditlimit - saldo);
 }
@@ -41,39 +45,22 @@ void account::showWithdrawError(QLabel *label, const QString &text, int ms)
     });
 }
 
-account::account(QString cardnumber, QString cardtype,QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::account),
-    cardnumber(cardnumber),
-    cardtype(cardtype)
+account::account(int idAccount, const QString& idUser, const QString& fName, ApiClient* api, QWidget *parent)
+    : QDialog(parent)
+    , ui(new Ui::account)
+    , m_api(api)
+    , m_idAccount(idAccount)
+    , m_idUser(idUser)
+    , m_fName(fName)
 {
     ui->setupUi(this);
+    m_api->getBalance(m_idAccount);
     ui->stackedAccount->setCurrentWidget(ui->screenLogin);
 
-    ui->labelLoginCardnumber->setText(cardnumber + " " + cardtype);
-
-    //testidataa taulua varten
-    testData = R"([
-    {"idlog": 1, "time": "2026-01-18 12:00", "balancechange": -20.50},
-    {"idlog": 2, "time": "2026-01-18 12:05", "balancechange": 100.00},
-    {"idlog": 3, "time": "2026-01-18 13:30", "balancechange": -5.00},
-    {"idlog": 4, "time": "2026-01-18 14:15", "balancechange": -12.80},
-    {"idlog": 5, "time": "2026-01-18 15:00", "balancechange": 2450.00},
-    {"idlog": 6, "time": "2026-01-18 16:45", "balancechange": -65.20},
-    {"idlog": 7, "time": "2026-01-19 08:30", "balancechange": -4.50},
-    {"idlog": 8, "time": "2026-01-19 09:12", "balancechange": -110.00},
-    {"idlog": 9, "time": "2026-01-19 11:50", "balancechange": 15.00},
-    {"idlog": 10, "time": "2026-01-19 13:20", "balancechange": -22.15},
-    {"idlog": 11, "time": "2026-01-19 17:05", "balancechange": -45.00},
-    {"idlog": 12, "time": "2026-01-20 10:00", "balancechange": -3.20},
-    {"idlog": 13, "time": "2026-01-20 12:30", "balancechange": 50.00},
-    {"idlog": 14, "time": "2026-01-20 15:45", "balancechange": -200.00},
-    {"idlog": 15, "time": "2026-01-20 18:20", "balancechange": -8.90}
-    ])";
+    ui->labelLoginCardnumber->setText("Käyttäjä: " + m_fName);
 
     tapahtumat = new logs(this);
     ui->tableTapahtumat->setModel(tapahtumat->getModel());
-    tapahtumat->setLog(testData);
 
     //Estetään käyttäjää  muokkaamasta tablen ulkonäköä ja säädetään ulkonäköä
 
@@ -88,6 +75,76 @@ account::account(QString cardnumber, QString cardtype,QWidget *parent)
     ui->tableTapahtumat->verticalHeader()->setVisible(false);
     ui->tableTapahtumat->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
+    // React to successful balance retrieval from the backend
+    connect(m_api, &ApiClient::balanceReceived, this,
+        [this](int idAccount, double balance, double creditLimit)
+        {
+            // Ignore events for other accounts
+            if (idAccount != m_idAccount) return;
+            
+            // Update internal state
+            saldo = balance;
+            creditlimit = creditLimit;
+            
+            // Update UI only if the balance screen is currently visible
+            if (ui->stackedAccount->currentWidget() == ui->screenSaldo) {
+                ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo));
+                ui->labelSaldoCreditLimit->setText(QString::asprintf("%.2f €", creditlimit));
+                ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit - saldo));
+            }
+        }
+    );
+    
+    // React to a successful withdrawal (debit or credit)
+    connect(m_api, &ApiClient::withdrawSucceeded, this,
+        [this](int idAccount, double newBalance)
+        {
+            // Ignore events for other accounts
+            if (idAccount != m_idAccount) return;
+            // Update local balance
+            saldo = newBalance;
+            
+            // Update UI only if the balance screen is currently visible
+            if (ui->stackedAccount->currentWidget() == ui->screenSaldo) {
+                ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo));
+                ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit - saldo));
+            }
+        }
+    );
+    
+    // React to successful retrieval of account transaction logs
+    connect(m_api, &ApiClient::logsReceived, this,
+        [this](int idAccount, const QVector<LogItemDto>& logs)
+        {
+            // Ignore events for other accounts
+            if (idAccount != m_idAccount) return;
+            
+            // Convert log DTOs into a JSON array
+            QJsonArray arr;
+            for (const auto& item : logs) {
+                QJsonObject o;
+                o["idlog"] = item.idLog;
+                o["time"] = item.time;
+                o["balancechange"] = item.balanceChange;
+                arr.append(o);
+            }
+            // Serialize JSON to bytes and pass it to the log view component
+            const QByteArray jsonBytes = QJsonDocument(arr).toJson(QJsonDocument::Compact);
+            tapahtumat->setLog(jsonBytes);
+        }
+    );
+    
+    // React to any API error (network, validation, backend failure)
+    connect(m_api, &ApiClient::requestFailed, this,
+        [this](const ApiError& err)
+        {
+            // Show a withdrawal-related error message in the UI
+            showWithdrawError(
+                ui->labelNostaValitseVirhe_2,
+                err.message.isEmpty() ? "Tapahtui virhe" : err.message
+            );
+        }
+    );
 }
 
 account::~account()
@@ -106,17 +163,25 @@ void account::paintEvent(QPaintEvent *event)
 void account::on_btnSaldo_clicked()
 {
     ui->stackedAccount->setCurrentWidget(ui->screenSaldo);
+    m_api->getBalance(m_idAccount);
 
     ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo));
     ui->labelSaldoCreditLimit->setText(QString::asprintf("%.2f €", creditlimit));
     ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit-saldo));
 
     //piilotetaan vain Creditillä käytössä olevat tiedot jos debit
-    if (cardtype == "debit"){
+    const bool isDebit = (creditlimit <= 0.0);
+    
+    if (isDebit) {
         ui->labelSaldoCreditLimit->hide();
         ui->labelSaldoLuottoaJaljella->hide();
         ui->labelSaldoCreditText->hide();
         ui->labelSaldoLuottoText->hide();
+    } else {
+        ui->labelSaldoCreditLimit->show();
+        ui->labelSaldoLuottoaJaljella->show();
+        ui->labelSaldoCreditText->show();
+        ui->labelSaldoLuottoText->show();
     }
 }
 
@@ -124,6 +189,7 @@ void account::on_btnSaldo_clicked()
 void account::on_btnTapahtumat_clicked()
 {
     ui->stackedAccount->setCurrentWidget(ui->screenTapahtumat);
+    m_api->getAccountLogs(m_idAccount);
 }
 
 
@@ -134,11 +200,12 @@ void account::on_btnNostaRahaa_clicked()
     ui->labelNostaValitseVirhe->hide();
     ui->labelNostaValitseKate->hide();
     ui->labelNostaValitseVirhe_2->hide();
+    ui->labelNostosumma->clear();
 
     //kursori summakenttaään
     ui->labelNostosumma->setFocus();
     //mahdollisuus entteriä painamalla valita muu summa
-    connect(ui->labelNostosumma, &QLineEdit::returnPressed, this, &account::on_btnNostaMuu_clicked);
+    connect(ui->labelNostosumma, &QLineEdit::returnPressed, this, &account::on_btnNostaMuu_clicked, Qt::UniqueConnection);
 }
 
 
@@ -261,3 +328,60 @@ void account::on_btnTapahtumatOikea_clicked()
     tapahtumat->nextPage();
 }
 
+
+// Called when the user clicks the "Confirm Withdrawal" button
+void account::on_btnNostaVahvistaVahvista_clicked()
+{
+    // Amount to withdraw (already validated earlier)
+    const double amount = nostosumma;
+    // Determine whether this is a credit account
+    // Credit accounts have a positive credit limit
+    const bool isCredit = creditlimit > 0.0;
+    
+    // Call the appropriate API endpoint based on account type
+    if (isCredit) {
+        // Credit withdrawal
+        m_api->withdrawCredit(m_idAccount, amount);
+    } else {
+        // Debit withdrawal
+        m_api->withdrawDebit(m_idAccount, amount);
+    }
+    
+    // After sending the request, switch back to the login / idle screen
+    // (actual balance update happens asynchronously via signals)
+    ui->stackedAccount->setCurrentWidget(ui->screenLogin);
+}
+
+// Handle keyboard input globally for this dialog
+void account::keyPressEvent(QKeyEvent *event)
+{
+    // Check if the current screen is the withdrawal selection screen
+    const bool onWithdrawSelect =
+    (ui->stackedAccount->currentWidget() == ui->screenNostaValitse);
+    
+    // Handle Enter / Return key specifically on the withdraw selection screen
+    if (onWithdrawSelect &&
+        (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter))
+        {
+            // If the amount input does not have focus, move focus to it
+            if (!ui->labelNostosumma->hasFocus()) {
+                ui->labelNostosumma->setFocus();
+                event->accept();
+                return;
+            }
+            
+            // If the amount field has text, treat Enter as "confirm custom amount"
+            if (!ui->labelNostosumma->text().trimmed().isEmpty()) {
+                on_btnNostaMuu_clicked();
+                event->accept();
+                return;
+            }
+            
+            // Consume the event even if nothing else happens
+            event->accept();
+            return;
+        }
+        
+        // For all other keys and screens, use default dialog behavior
+        QDialog::keyPressEvent(event);
+    }

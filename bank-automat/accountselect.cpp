@@ -26,7 +26,7 @@ accountselect::accountselect(
     ui->setupUi(this);
     
     // Display the logged-in user's identifier
-    ui->labelTest->setText("Käyttäjä: " + m_login.idUser);
+    ui->labelTest->setText("Käyttäjä: " + m_login.fName);
     
     // Build a map from account type ("debit"/"credit") to account ID
     for (const AccountDto& acc : m_login.accounts) {
@@ -66,16 +66,15 @@ void accountselect::on_btnSelectCredit_clicked()
 void accountselect::openAccountWindow()
 {
     // Resolve account ID from the selected type
-    const int accountId = accountIdByType.value(selectedAccountType, -1);
-    if (accountId < 0) {
-        // Safety check: no valid account found
-        return;
-    }
-    
+    const int idAccount = accountIdByType.value(selectedAccountType, -1);
+    if (idAccount < 0) return;
+
     // Create the account window
     account* accountWindow = new account(
-        m_login.idCard,         // Card ID
-        selectedAccountType,    // "debit" or "credit"
+        idAccount,
+        m_login.idUser,
+        m_login.fName,
+        m_api,
         nullptr
     );
     
