@@ -13,7 +13,7 @@ jobs:
         runs-on: ubuntu-latest
         defaults:
             run:
-                working-directory: ./bank_automat
+                working-directory: ./bank-automat
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
               run: sudo apt-get install -y cppcheck
 
             - name: run cppcheck
-              run: cppcheck --enable=all --inconclusive --quiet --std=c++17 ./bank_automat/*.cpp
+              run: cppcheck --enable=all --inconclusive --quiet --std=c++17 ./bank-automat/*.cpp
               
             - name: configue project
               run: cmake -B build
@@ -56,5 +56,5 @@ jobs:
                   username: ${{ secrets.SERVER_USER }}
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   port: ${{ secrets.SERVER_SSH_PORT }}
-                  source: "./bank_automat/build/*"
+                  source: "./bank-automat/build/*"
                   target: ${{ secrets.SERVER_DEPLOY_PATH }}
