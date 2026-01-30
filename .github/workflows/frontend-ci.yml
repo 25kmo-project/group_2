@@ -1,0 +1,60 @@
+name: frontend-ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: ./bank_automat
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: install qt
+              uses: jurplel/install-qt-action@v2
+              with:
+                  version: '6.5.2'
+                  host: 'linux'
+                  modules: 'qtquickcontrols2,qtwebsockets'
+            
+            - name: install cmake
+              run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+            
+            - name: Install cppcheck
+              run: sudo apt-get install -y cppcheck
+
+            - name: run cppcheck
+              run: cppcheck --enable=all --inconclusive --quiet --std=c++17 ./bank_automat/*.cpp
+              
+            - name: configue project
+              run: cmake -B build
+
+            - name: build project
+              run: cmake --build build --config Release -- -j$(nproc)
+
+            - name: login test
+              run: ctest --test-dir build --output-on-failure
+              env:
+                BACKEND_IP: ${{ secrets.SERVER_HOST }}
+                BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
+                TEST_CARD: ${{ secrets.TEST_CARD }}
+                TEST_PIN: ${{ secrets.TEST_PIN }}
+            
+            - name: deploy to server via ssh
+              if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+              uses: appleboy/scp-action@v0.1.4
+              with:
+                  host: ${{ secrets.SERVER_HOST }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.SERVER_SSH_KEY }}
+                  port: ${{ secrets.SERVER_SSH_PORT }}
+                  source: "./bank_automat/build/*"
+                  target: ${{ secrets.SERVER_DEPLOY_PATH }}
