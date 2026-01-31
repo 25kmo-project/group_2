@@ -16,10 +16,10 @@ jobs:
                 working-directory: ./bank-automat
         
         env:
-        BACKEND_IP: ${{ secrets.SERVER_HOST }}
-        BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
-        TEST_CARD: ${{ secrets.TEST_CARD }}
-        TEST_PIN: ${{ secrets.TEST_PIN }}
+          BACKEND_IP: ${{ secrets.SERVER_HOST }}
+          BACKEND_PORT: ${{ secrets.BACKEND_PORT }}
+          TEST_CARD: ${{ secrets.TEST_CARD }}
+          EST_PIN: ${{ secrets.TEST_PIN }}
         
         
         steps:
