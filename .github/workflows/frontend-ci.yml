@@ -17,15 +17,6 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
-
-            # Cache Qt installation
-            - name: Cache Qt
-              uses: actions/cache@v4
-              with:
-                path: ${{ runner.temp }}/qt
-                key: ${{ runner.os }}-qt-6.5-cache
-                restore-keys: |
-                  ${{ runner.os }}-qt-
             
             # Install Qt 6.5.2 using miurahr/setup-qt
             - name: Setup Qt 6.5.2
@@ -35,7 +26,7 @@ jobs:
                 modules: 'qtbase qttools qtsvg'
             
             - name: install cmake
-              run: sudo apt-get update && sudo apt-get install -y cmake build-essential qt6-base-dev
+              run: sudo apt-get update && sudo apt-get install -y cmake build-essential
             
             - name: Install cppcheck
               run: sudo apt-get install -y cppcheck
