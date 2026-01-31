@@ -40,7 +40,6 @@ jobs:
         run: |
           python3 -m aqt install-qt linux desktop 6.5.2 gcc_64 \
             --outputdir "$GITHUB_WORKSPACE/Qt" \
-            --modules qtbase qttools qtsvg qtdeclarative
         
 
       # Export Qt env variables for CMake
