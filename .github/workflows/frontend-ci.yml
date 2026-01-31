@@ -34,7 +34,7 @@ jobs:
                   version: '6.5.2'
                   target: desktop
                   arch: gcc_64
-                  modules: qtbase qttest qtsvg
+                  modules: qtbase qttools qtsvg
                   dir: ${{ runner.temp }}/qt
                   cache: true
             
