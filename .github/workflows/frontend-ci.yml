@@ -28,10 +28,10 @@ jobs:
                   ${{ runner.os }}-qt-
             
             # Install Qt
-            - name: install qt 6.10.2
+            - name: install qt 6.8.3
               uses: jurplel/install-qt-action@v2
               with:
-                  version: '6.10.2'
+                  version: '6.8.3'
                   target: desktop
                   arch: gcc_64
                   modules: |
