@@ -29,7 +29,10 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install --upgrade aqtinstall
-        
+      # list available Qt versions
+      - name: List available Qt versions
+        run: |
+          python3 -m aqt list-qt linux desktop
 
       # (optional) list available modules for this combo
       - name: List available modules for Qt 6.8.1 gcc_64
