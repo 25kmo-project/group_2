@@ -33,22 +33,16 @@ jobs:
       - name: List available Qt versions
         run: |
           python3 -m aqt list-qt linux desktop
-
-      # (optional) list available modules for this combo
-      - name: List available modules for Qt 6.8.1 gcc_64
-        run: |
-          python3 -m aqt list-qt linux desktop --modules 6.8.1 gcc_64
   
-      - name: Install Qt 6.8.1 (desktop gcc_64) with modules
+      - name: Install Qt 6.10.2 (desktop gcc_64) with modules
         run: |
-          python3 -m aqt install-qt linux desktop 6.8.1 gcc_64 \
+          python3 -m aqt install-qt linux desktop 6.10.2 gcc_64 \
             --outputdir "$GITHUB_WORKSPACE/Qt" \
-          
       # Export Qt env variables for CMake
       - name: Export Qt env for CMake
         run: |
-          echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/Qt/6.8.1/gcc_64" >> $GITHUB_ENV
-          echo "Qt6_DIR=$GITHUB_WORKSPACE/Qt/6.8.1/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/Qt/6.10.2/gcc_64" >> $GITHUB_ENV
+          echo "Qt6_DIR=$GITHUB_WORKSPACE/Qt/6.10.2/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
 
       # Build tools (CMake, Ninja)
       - name: Install build tools
