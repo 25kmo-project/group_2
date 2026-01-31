@@ -18,15 +18,33 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: install qt
+            # Cache Qt installation
+            - name: Cache Qt
+              uses: actions/cache@v4
+              with:
+                path: ${{ runner.temp }}/qt
+                key: ${{ runner.os }}-qt-6.5-cache
+                restore-keys: |
+                  ${{ runner.os }}-qt-
+            
+            # Install Qt
+            - name: install qt 6.5.*
               uses: jurplel/install-qt-action@v2
               with:
-                  version: '6.5.2'
-                  host: 'linux'
-                  modules: 'qtquickcontrols2,qtwebsockets'
+                  version: 6.5.*
+                  target: desktop
+                  arch: gcc_64
+                  modules: |
+                    qtbase
+                    qtsvg
+                    qttools
+                    gt5compat
+                    qtdeclarative
+                  dir: ${{ runner.temp }}/qt
+                  cache: true
             
             - name: install cmake and QtTest
-              run: sudo apt-get update && sudo apt-get install -y cmake build-essential && sudo apt-get install -y cmake build-essential qt6-base-dev
+              run: sudo apt-get update && sudo apt-get install -y cmake build-essential && sudo apt-get install -y qt6-base-dev qt6-test-dev
             
             - name: Install cppcheck
               run: sudo apt-get install -y cppcheck
@@ -34,7 +52,7 @@ jobs:
             - name: run cppcheck
               run: cppcheck --enable=all --inconclusive --quiet --std=c++17 *.cpp
               
-            - name: configue project
+            - name: configure project
               run: cmake -B build
 
             - name: build project
