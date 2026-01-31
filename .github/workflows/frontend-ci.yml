@@ -34,18 +34,18 @@ jobs:
                   version: '6.5.2'
                   target: desktop
                   arch: gcc_64
-                  modules: qtbase qttest
+                  modules: qtbase qttest qtsvg
                   dir: ${{ runner.temp }}/qt
                   cache: true
             
-            - name: install cmake and QtTest
-              run: sudo apt-get update && sudo apt-get install -y cmake build-essential && sudo apt-get install -y qt6-base-dev
+            - name: install cmake
+              run: sudo apt-get update && sudo apt-get install -y cmake build-essential qt6-base-dev
             
             - name: Install cppcheck
               run: sudo apt-get install -y cppcheck
 
             - name: run cppcheck
-              run: cppcheck --enable=all --inconclusive --quiet --std=c++17 *.cpp
+              run: cppcheck --enable=all --inconclusive --quiet --std=c++17 .
               
             - name: configure project
               run: cmake -B build
