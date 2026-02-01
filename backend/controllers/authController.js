@@ -39,7 +39,7 @@ async function login(req, res, next) {
 
         // Verify PIN with pepper (cardPIN already retrieved from sp_read_card_info)
         const pepperedPIN = pin + config.pinPepper;
-        const isMatch = await bcrypt.compare(pepperedPIN, card.cardpin);
+        const isMatch = await bcrypt.compare(pepperedPIN, card.cardPIN); // Korjattu virhe
 
         if (!isMatch) {
             throw new AppError('Invalid credentials', 401);
@@ -48,7 +48,9 @@ async function login(req, res, next) {
         // Get user info including role
         const [userResults] = await pool.execute('CALL sp_read_user_info(?)', [card.iduser]);
         const userRows = userResults[0] || [];
-        const userRole = userRows.length ? userRows[0].role : 'user';
+        const user = userRows[0] || null;
+        const userRole = user?.role ?? 'user';
+        const fName = user?.fname ?? '';
 
         // Get linked accounts using cardaccount procedure
         const [linkResults] = await pool.execute('CALL sp_get_card_info(?)', [idCard]);
@@ -77,6 +79,8 @@ async function login(req, res, next) {
 
         res.status(200).json({
             token,
+            role: userRole,
+            fName,
             card: {
                 idCard: card.idcard,
                 idUser: card.iduser,

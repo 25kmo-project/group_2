@@ -1,0 +1,97 @@
+name: frontend-ci
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'bank-automat/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'bank-automat/**'
+      - '.github/workflows/frontend-ci.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: ./bank-automat
+
+    env:
+      BACKEND_IP: ${{ secrets.SERVER_HOST }}
+      BACKEND_PORT: 3000
+      TEST_CARD: CARD123456
+      TEST_PIN: "1234"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install Qt 6.6.3 with aqtinstall
+      - name: Install aqtinstall (pip)
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --upgrade aqtinstall
+  
+      - name: Install Qt 6.6.3 (desktop gcc_64)
+        run: |
+          python3 -m aqt install-qt linux desktop 6.6.3 gcc_64 \
+            --outputdir "$GITHUB_WORKSPACE/Qt"
+      # Export Qt env variables for CMake
+      - name: Export Qt env for CMake
+        run: |
+          echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/Qt/6.6.3/gcc_64" >> $GITHUB_ENV
+          echo "Qt6_DIR=$GITHUB_WORKSPACE/Qt/6.6.3/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
+
+      # Build tools (CMake, Ninja)
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake build-essential
+
+      # Xvfb and Qt 6 Linux dependencies
+      - name: Install Xvfb and Qt 6 Linux deps (xcb/xkbcommon/GL)
+        run: |
+          sudo apt-get install -y \
+            xvfb x11-utils \
+            libxcb-cursor0 \
+            libxkbcommon-x11-0 libxkbcommon0 \
+            libxcb1 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+            libxcb-randr0 libxcb-render-util0 libxcb-shape0 \
+            libxcb-shm0 libxcb-sync1 libxcb-xinerama0 libxcb-xfixes0 libxcb-xkb1 \
+            libgl1 libegl1 \
+            libx11-dev libxext-dev libxrender-dev libxi-dev libxfixes-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev \
+            libxcb1-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev \
+            libxcb-randr0-dev libxcb-render-util0-dev libxcb-shape0-dev \
+            libxcb-shm0-dev libxcb-sync-dev libxcb-xinerama0-dev libxcb-xfixes0-dev libxcb-xkb-dev \
+            mesa-common-dev libgl1-mesa-dev
+
+      # Configure, build, test
+      - name: Configure (CMake + Ninja, Release)
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run tests (headless via Xvfb)
+        run: xvfb-run --auto-servernum ctest --test-dir build --output-on-failure
+
+      # Deploy 
+      - name: Deploy to server via SSH
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "bank-automat/build/bank-automat"
+          target: "/home/ubuntu/pankkiautomaatti/group_2/"
+          strip_components: 0

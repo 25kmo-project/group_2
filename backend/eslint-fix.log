@@ -1,0 +1,13 @@
+
+> backend@0.0.0 lint:fix
+> eslint . --fix
+
+
+/home/ubuntu/pankkiautomaatti/group_2/backend/middleware/errorHandler.js
+  4:38  warning  'next' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/home/ubuntu/pankkiautomaatti/group_2/backend/routes/index.js
+  5:36  warning  'next' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+✖ 2 problems (0 errors, 2 warnings)
+
