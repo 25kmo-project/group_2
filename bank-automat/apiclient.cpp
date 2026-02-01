@@ -70,7 +70,7 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
     }
 
     // Handle response asynchronously
-    connect(reply, &QNetworkReply::finished, this, [this, reply, path, body]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, path, body, method]() {
         ApiError err;
         QJsonDocument doc = readJson(reply, err);
 
@@ -159,8 +159,14 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             emit withdrawSucceeded(idAccount, newBalance);
         }
 
-        //Special case for creatign a user
-        if (path.startsWith("/users")) {
+        // Special case for updating user
+        if (path.startsWith("/users/") && method == "PUT") {
+            QString idFromPath = path.section('/',2,2);
+            emit userUpdated(idFromPath);
+        }
+
+        //Special case for creating a user
+        if (path.startsWith("/users") && method == "POST") {
             QString id = body.value("idUser").toString();
             emit userCreated(id);
         }
@@ -322,9 +328,15 @@ void ApiClient::getUser(QString idUser)
     sendNoBody("GET", QString("/users/%1").arg(idUser));
 }
 
-void ApiClient::addUser(QString idUser, QString fname, QString lname, QString streetaddress, QString role)
+void ApiClient::addUser(QString idUser, QString firstName, QString lastName, QString streetaddress, QString role)
 {
-    sendJson("POST", QString("/users"), QJsonObject{{"idUser", idUser},{"firstName", fname},{"lastName",lname},{"streetAddress", streetaddress}, {"role", role}});
+    sendJson("POST", QString("/users"), QJsonObject{{"idUser", idUser},{"firstName", firstName},{"lastName",lastName},{"streetAddress", streetaddress}, {"role", role}});
+}
+
+//Role cannot currently be changed due to mysql procedure limitation
+void ApiClient::updateUser(QString idUser, QString firstName, QString lastName, QString streetaddress) //, QString role)
+{
+    sendJson("PUT",QString("/users/%1").arg(idUser), QJsonObject{{"idUser", idUser},{"firstName", firstName},{"lastName",lastName},{"streetAddress", streetaddress}});
 }
 
 // POST /atm/{idAccount}/withdraw with { amount }

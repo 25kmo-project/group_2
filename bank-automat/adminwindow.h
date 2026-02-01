@@ -45,6 +45,7 @@ private slots:
     void on_btnLogOutLowBar_2_clicked();
     void on_btnKayttajaLuoUusi_clicked();
     void on_btnKayttajaHae_clicked();
+    void on_btnKayttajaPaivitaTietoja_clicked();
 };
 
 #endif // ADMINWINDOW_H

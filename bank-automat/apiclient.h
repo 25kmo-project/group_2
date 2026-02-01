@@ -89,7 +89,8 @@ public:
 
     void getUser(QString idUser);
     void addUser(QString idUser, QString fname, QString lname, QString streetaddress, QString role);
-    void updateUser(QString idUser, QString fname, QString lname, QString streetaddress, QString role);
+    //Role cannot currenly be changed with this due to db procedure not having it
+    void updateUser(QString idUser, QString fname, QString lname, QString streetaddress); //, QString role);
 
 signals:
     // Emitted when login succeeds and all required data is parsed
@@ -108,6 +109,8 @@ signals:
     void userReceived(const QByteArray& userInfo);
     // Emitted when user is created
     void userCreated(QString idUser);
+    // Emitted when user is updated
+    void userUpdated(QString idUser);
 
     // Emitted whenever any API request fails
     void requestFailed(const ApiError& error);

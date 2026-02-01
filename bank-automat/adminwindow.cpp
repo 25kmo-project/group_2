@@ -134,6 +134,13 @@ adminwindow::adminwindow(int idAccount, const QString &idUser, const QString &fN
             m_api->getUser(id);
         }
     });
+
+    connect(m_api, &ApiClient::userUpdated, this, [this](QString id) {
+        //Just in case something goes wrong it doesnt crash with empty id
+        if (!id.isEmpty()) {
+            m_api->getUser(id);
+        }
+    });
 }
 
 adminwindow::~adminwindow()
@@ -212,6 +219,37 @@ void adminwindow::on_btnKayttajaHae_clicked()
         m_api->getUser(idUser);
 
         ui->lineAsiakkaatID->clear();
+    }
+}
+
+
+void adminwindow::on_btnKayttajaPaivitaTietoja_clicked()
+{
+    //If some inputs are empty, old data is pulled from table so that it doesnt get emptied by db procedure
+    QString idUser = ui->lineAsiakkaatID->text().trimmed();
+    QString inputFName = ui->lineAsiakkaatFname->text().trimmed();
+    QString inputLName = ui->lineAsiakkaatLname->text().trimmed();
+    QString inputAddress = ui->lineAsiakkaatAddress->text().trimmed();
+    //Cant change this currently
+    //QString inputRole = ui->lineAsiakkaatRole->text().trimmed();
+
+    QString currentFName = ui->tableUserData->model()->index(0,1).data().toString();
+    QString currentLName = ui->tableUserData->model()->index(0,2).data().toString();
+    QString currentAddress = ui->tableUserData->model()->index(0,3).data().toString();
+    //Cant change role currently
+    //QString currentRole = ui->tableUserData->model()->index(0,4).data().toString();
+    if (!idUser.isEmpty()) {
+        QString fname = inputFName.isEmpty() ? currentFName : inputFName;
+        QString lname = inputLName.isEmpty() ? currentLName : inputLName;
+        QString streetAddress = inputAddress.isEmpty() ? currentAddress : inputAddress;
+        //QString role = inputRole.isEmpty() ? currentRole : inputRole;
+        m_api->updateUser(idUser, fname, lname, streetAddress);
+
+        ui->lineAsiakkaatID->clear();
+        ui->lineAsiakkaatFname->clear();
+        ui->lineAsiakkaatLname->clear();
+        ui->lineAsiakkaatAddress->clear();
+        ui->lineAsiakkaatRole->clear();
     }
 }
 
