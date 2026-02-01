@@ -85,7 +85,7 @@ jobs:
 
       # Deploy 
       - name: Deploy to server via SSH
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'main')
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SERVER_HOST }}
