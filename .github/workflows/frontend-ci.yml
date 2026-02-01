@@ -31,21 +31,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Install Qt 6.5.2 with aqtinstall
+      # Install Qt 6.6.3 with aqtinstall
       - name: Install aqtinstall (pip)
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install --upgrade aqtinstall
   
-      - name: Install Qt 6.5.2 (desktop gcc_64)
+      - name: Install Qt 6.6.3 (desktop gcc_64)
         run: |
-          python3 -m aqt install-qt linux desktop 6.5.2 gcc_64 \
+          python3 -m aqt install-qt linux desktop 6.6.3 gcc_64 \
             --outputdir "$GITHUB_WORKSPACE/Qt"
       # Export Qt env variables for CMake
       - name: Export Qt env for CMake
         run: |
-          echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/Qt/6.5.2/gcc_64" >> $GITHUB_ENV
-          echo "Qt6_DIR=$GITHUB_WORKSPACE/Qt/6.5.2/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/Qt/6.6.3/gcc_64" >> $GITHUB_ENV
+          echo "Qt6_DIR=$GITHUB_WORKSPACE/Qt/6.6.3/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
 
       # Build tools (CMake, Ninja)
       - name: Install build tools
