@@ -100,6 +100,8 @@ adminwindow::adminwindow(int idAccount, const QString &idUser, const QString &fN
     ui->tableUserData->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
     ui->tableUserData->setColumnWidth(4, 60);
 
+    //IdAccount only accept numbers
+    ui->lineTilitIdaccount->setValidator(new QIntValidator(0, 999999, this));
     ui->tableAccountsData->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
     ui->tableAccountsData->setColumnWidth(0, 80);
     ui->tableAccountsData->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
@@ -120,13 +122,11 @@ adminwindow::adminwindow(int idAccount, const QString &idUser, const QString &fN
     ui->tableLokit->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->tableLokit->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
 
-    connect(m_api, &ApiClient::userReceived, this, [this](QByteArray userInfo)
-        {
-                userData->setUserData(userInfo);
-                userData->updateModel();
-                //qDebug() << "RAW DATA FROM API:" << userInfo;
-        }
-    );
+    connect(m_api, &ApiClient::userReceived, this, [this](QByteArray userInfo) {
+        userData->setUserData(userInfo);
+        userData->updateModel();
+
+    });
 
     connect(m_api, &ApiClient::userCreated, this, [this](QString id) {
         //Just in case something goes wrong it doesnt crash with empty id
@@ -140,6 +140,12 @@ adminwindow::adminwindow(int idAccount, const QString &idUser, const QString &fN
         if (!id.isEmpty()) {
             m_api->getUser(id);
         }
+    });
+
+    connect(m_api, &ApiClient::accountReceived, this, [this](QByteArray accountInfo) {
+        accountsData->setAccountsData(accountInfo);
+        accountsData->updateModel();
+        qDebug() << "RAW DATA FROM API:" << accountInfo;
     });
 }
 
@@ -250,6 +256,34 @@ void adminwindow::on_btnKayttajaPaivitaTietoja_clicked()
         ui->lineAsiakkaatLname->clear();
         ui->lineAsiakkaatAddress->clear();
         ui->lineAsiakkaatRole->clear();
+    }
+}
+
+
+void adminwindow::on_btnKayttajaPoista_clicked()
+{
+    QString idUser = ui->lineAsiakkaatID->text();
+    if (!idUser.isEmpty()) {
+        m_api->deleteUser(idUser);
+
+        ui->lineAsiakkaatID->clear();
+        //Clears the table after deleting
+        userData->setUserData(QByteArray());
+    }
+}
+
+
+void adminwindow::on_btnTiliHae_clicked()
+{
+    //Remove spaces and check that input is given and it is a number
+    QString idAccount = ui->lineTilitIdaccount->text().trimmed();
+    if (!idAccount.isEmpty()) {
+        bool ok;
+        int intIdAccount = idAccount.toInt(&ok);
+        if (ok) {
+            m_api->getAccount(intIdAccount);
+            ui->lineTilitIdaccount->clear();
+        }
     }
 }
 

@@ -1176,7 +1176,7 @@
          </palette>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="screenTilit">
          <property name="palette">
@@ -2131,7 +2131,7 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>20</y>
+            <y>90</y>
             <width>121</width>
             <height>51</height>
            </rect>
@@ -2144,7 +2144,7 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>90</y>
+            <y>160</y>
             <width>121</width>
             <height>51</height>
            </rect>
@@ -2204,6 +2204,19 @@
             <width>171</width>
             <height>22</height>
            </rect>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btnTiliHae">
+          <property name="geometry">
+           <rect>
+            <x>540</x>
+            <y>20</y>
+            <width>121</width>
+            <height>51</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Hae Tili</string>
           </property>
          </widget>
         </widget>

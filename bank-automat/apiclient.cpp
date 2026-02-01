@@ -171,6 +171,12 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             emit userCreated(id);
         }
 
+        //Special case for deletin a user
+        if (path.startsWith("/users") && method == "DELETE") {
+            QString id = body.value("idUser").toString();
+            emit userDeleted();
+        }
+
         reply->deleteLater();
     });
 }
@@ -186,7 +192,7 @@ void ApiClient::sendNoBody(const QString& method, const QString& path)
     else if (method == "POST") reply = m_nam.post(req, QByteArray());
     else reply = m_nam.sendCustomRequest(req, method.toUtf8());
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply, path]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, path, method]() {
         const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         const bool ok = (reply->error() == QNetworkReply::NoError) && status >= 200 && status < 300;
 
@@ -241,6 +247,12 @@ void ApiClient::sendNoBody(const QString& method, const QString& path)
         if (path.startsWith("/users/")) {
             QByteArray o = doc.toJson(QJsonDocument::Compact);
             emit userReceived(o);
+        }
+
+        // Special-case: GET /accounts/{idAccount} returns account data as an object
+        if (path.startsWith("/accounts") && method == "GET") {
+            QByteArray o = doc.toJson(QJsonDocument::Compact);
+            emit accountReceived(o);
         }
 
         reply->deleteLater();
@@ -337,6 +349,16 @@ void ApiClient::addUser(QString idUser, QString firstName, QString lastName, QSt
 void ApiClient::updateUser(QString idUser, QString firstName, QString lastName, QString streetaddress) //, QString role)
 {
     sendJson("PUT",QString("/users/%1").arg(idUser), QJsonObject{{"idUser", idUser},{"firstName", firstName},{"lastName",lastName},{"streetAddress", streetaddress}});
+}
+
+void ApiClient::deleteUser(QString idUser)
+{
+    sendJson("DELETE", QString("/users/%1").arg(idUser),QJsonObject{{}});
+}
+
+void ApiClient::getAccount(int idAccount)
+{
+    sendNoBody("GET", QString("/accounts/%1").arg(idAccount));
 }
 
 // POST /atm/{idAccount}/withdraw with { amount }

@@ -16,16 +16,17 @@ void accountsdata::setAccountsData(const QByteArray &newAccountsData)
     accountsDataList.clear();
     accountsDataArray = newAccountsData;
     QJsonDocument json_doc = QJsonDocument::fromJson(accountsDataArray);
-    QJsonArray json_array=json_doc.array();
 
-    //QVector<accounts> loglist;
-    for (const QJsonValue &value : json_array) {
-        //jsonista c++ objektiksi
-        if (value.isObject()) {
-            accounts accountsData = accounts::mapJson(value.toObject());
-            accountsDataList.append(accountsData);
+    if(json_doc.isArray()) {
+        QJsonArray json_array=json_doc.array();
+        for (const QJsonValue &value : json_array) {
+            accountsDataList.append(accounts::mapJson(value.toObject()));
         }
     }
+    else if (json_doc.isObject()) {
+        accountsDataList.append(accounts::mapJson(json_doc.object()));
+    }
+
     //nollataan varmuuden vuoksi
     tableModel->setRowCount(0);
 
@@ -39,17 +40,18 @@ void accountsdata::updateModel()
 
     for (int row = 0; row < accountsDataList.size(); row++) {
         const accounts &accounts = accountsDataList[row];
-        QStandardItem *idAccountItem = new QStandardItem(QString::number(accounts.idAccount));
-        idAccountItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-        tableModel->setItem(row,0, idAccountItem);
-        QStandardItem *idUserItem = new QStandardItem(accounts.idUser);
-        idUserItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-        tableModel->setItem(row,1, idUserItem);
-        QStandardItem *balanceItem = new QStandardItem(QString::asprintf("%.2f €", accounts.balance));
-        balanceItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        tableModel->setItem(row,2, balanceItem);
-        QStandardItem *creditItem = new QStandardItem(QString::asprintf("%.2f €", accounts.creditLimit));
-        creditItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        tableModel->setItem(row,3, creditItem);
+
+        QList<QStandardItem*> rowItems;
+        rowItems <<new QStandardItem(QString::number(accounts.idAccount))
+                 <<new QStandardItem(accounts.idUser)
+                 <<new QStandardItem(QString::asprintf("%.2f €", accounts.balance))
+                 <<new QStandardItem(QString::asprintf("%.2f €", accounts.creditLimit));
+
+        rowItems[0]->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+        rowItems[1]->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+        rowItems[2]->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        rowItems[3]->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+        tableModel->appendRow(rowItems);
     }
  }
