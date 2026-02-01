@@ -81,9 +81,7 @@ jobs:
         run: cmake --build build --parallel
 
       - name: Run tests (headless via Xvfb)
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: ctest --test-dir build --output-on-failure
+        run: xvfb-run --auto-servernum ctest --test-dir build --output-on-failure
 
       # Deploy 
       - name: Deploy to server via SSH
