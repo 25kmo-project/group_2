@@ -72,7 +72,7 @@ jobs:
                       # Luo .env tiedosto secretseistä
                       echo "DB_HOST=${{ secrets.DB_HOST }}" > .env
                       echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-                      echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+                      echo "DB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\"" >> .env
                       echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
                       echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
                       echo "PIN_PEPPER=${{ secrets.PIN_PEPPER }}" >> .env
