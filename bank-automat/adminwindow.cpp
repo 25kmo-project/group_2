@@ -340,7 +340,7 @@ void adminwindow::on_btnTiliLuoUusi_clicked()
 void adminwindow::on_btnTiliPaivitaLuottoraja_clicked()
 {
     QString idAccount = ui->lineTilitIdaccount->text().trimmed();
-    QString creditLimit = ui->lineTilitCreditlimit->text().trimmed();
+    QString creditLimit = ui->lineTilitCreditlimit->text().trimmed().replace(',','.');
     if (!idAccount.isEmpty() && !creditLimit.isEmpty()) {
         bool okId;
         bool okCredit;

@@ -88,9 +88,9 @@ account::account(int idAccount, const QString& idUser, const QString& fName, Api
             
             // Update UI only if the balance screen is currently visible
             if (ui->stackedAccount->currentWidget() == ui->screenSaldo) {
-                ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo));
-                ui->labelSaldoCreditLimit->setText(QString::asprintf("%.2f €", creditlimit));
-                ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit - saldo));
+                ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo).replace('.',','));
+                ui->labelSaldoCreditLimit->setText(QString::asprintf("%.2f €", creditlimit).replace('.',','));
+                ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit - saldo).replace('.',','));
             }
         }
     );
@@ -106,8 +106,8 @@ account::account(int idAccount, const QString& idUser, const QString& fName, Api
             
             // Update UI only if the balance screen is currently visible
             if (ui->stackedAccount->currentWidget() == ui->screenSaldo) {
-                ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo));
-                ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit - saldo));
+                ui->labelSaldoSaldo->setText(QString::asprintf("%.2f €", saldo).replace('.',','));
+                ui->labelSaldoLuottoaJaljella->setText(QString::asprintf("%.2f €", creditlimit - saldo).replace('.',','));
             }
         }
     );

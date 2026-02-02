@@ -21,7 +21,6 @@ ApiClient::ApiClient(QObject* parent)
 {
     QString db_url = getEnvValue("DB_IP");
     m_baseUrl = (QUrl(db_url));
-    qDebug() << "Url: " << m_baseUrl.toString();
 }
 
 
