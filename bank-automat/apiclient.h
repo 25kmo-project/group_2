@@ -15,6 +15,11 @@
 #include <QJsonDocument>
 #include <QVector>
 #include <QString>
+#include <QFile>
+#include <QTextStream>
+#include <QStringList>
+#include <QCoreApplication>
+#include <QDebug>
 
 class QNetworkReply;
 
@@ -135,6 +140,8 @@ private:
     static ApiError parseError(QNetworkReply* reply);
     // Read and parse JSON from a reply, also filling error metadata
     static QJsonDocument readJson(QNetworkReply* reply, ApiError& errOut);
+
+    QString getEnvValue(QString secret);
 
 private:
     QNetworkAccessManager m_nam;    // Qt network engine (handles async requests)

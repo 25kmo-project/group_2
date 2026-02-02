@@ -15,13 +15,14 @@
 // ApiClient is a thin wrapper around QNetworkAccessManager for calling the backend API
 // It stores the base URL and the current JWT token, builds requests, sends JSON, parses JSON responses and emits high-level signals for the UI
 ApiClient::ApiClient(QObject* parent)
-    : QObject(parent),
+    : QObject(parent)
     // Default backend address (local development)
     //m_baseUrl(QUrl("http://127.0.0.1:3000"))
-    //Real IP
-    m_baseUrl(QUrl("http://86.50.23.239:3000"))
 {
+    QString db_url = getEnvValue("DB_IP");
+    m_baseUrl = (QUrl(db_url));
 }
+
 
 // Configure where the backend lives (useful for changing envs)
 void ApiClient::setBaseUrl(const QUrl& baseUrl) { m_baseUrl = baseUrl; }
@@ -322,6 +323,25 @@ QJsonDocument ApiClient::readJson(QNetworkReply* reply, ApiError& errOut)
         return QJsonDocument();
     }
     return doc;
+}
+
+QString ApiClient::getEnvValue(QString secret)
+{
+    QFile file(QCoreApplication::applicationDirPath() + "/.env");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Opening .env failed";
+        // returns empty to prevent crashing
+        return "";
+    }
+    QTextStream in(&file);
+    while(!in.atEnd()) {
+        QString line = in.readLine();
+        if (line.startsWith(secret + "=")) {
+            QString secretKey = line.split("=").at(1).trimmed();
+            return secretKey;
+        }
+    }
+    return "";  //failsafe
 }
 
 // Convenience API methods used by the UI:
