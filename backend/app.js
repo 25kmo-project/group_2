@@ -44,10 +44,10 @@ const openapiPath = path.join(__dirname, 'openapi.yaml');
 const openapiDocument = YAML.load(openapiPath);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 openapiDocument.servers = [
-  {
-    url: `http://${process.env.SERVER_HOST}:3000`,
-    description: 'Current server'
-  }
+    {
+        url: `http://${process.env.SERVER_HOST}:3000`,
+        description: 'Current server'
+    }
 ];
 // 404-handler
 app.use((req, res, next) => {
