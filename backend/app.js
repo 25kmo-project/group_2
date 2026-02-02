@@ -5,6 +5,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var swaggerUi = require('swagger-ui-express');
+var YAML = require('yamljs');
 
 // Reittien tuonti
 var indexRouter = require('./routes/index');
@@ -37,6 +39,16 @@ app.use('/cardaccount', cardsaccountsRouter); // Admin: kortti-tili linkit
 app.use('/accounts', accountsRouter); // Admin: tilien hallinta
 app.use('/log', logRouter); // Admin: lokit
 
+// Swagger UI
+const openapiPath = path.join(__dirname, 'openapi.yaml');
+const openapiDocument = YAML.load(openapiPath);
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
+openapiDocument.servers = [
+  {
+    url: `http://${process.env.SERVER_HOST}:3000`,
+    description: 'Current server'
+  }
+];
 // 404-handler
 app.use((req, res, next) => {
     const err = new Error('Not Found');

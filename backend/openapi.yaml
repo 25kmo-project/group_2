@@ -1,0 +1,595 @@
+openapi: 3.0.3
+info:
+  title: Pankkiautomaatti API
+  version: 1.0.0
+  description: |
+    Pankkiautomaatti API dokumentaatio.
+    
+    ## Kirjautuminen ja autentikointi
+    
+    1. Käytä `/auth/login` endpointia kirjautuaksesi sisään
+
+    2. **Kopioi `token`-kenttä** vastauksesta
+    
+    3. Klikkaa **"Authorize" 🔓** -painiketta sivun yläosassa
+    
+    4. Liitä token kenttään muodossa: `<kopioitu_token>`
+    
+    5. Klikkaa "Authorize" ja "Close"
+    
+    6. Nyt voit testata kaikkia suojattuja endpointeja!
+    
+    ### Testitunnukset:
+    
+    - **Admin**: Card: `ADMINCARD`, PIN: `admin123`
+    
+    - **User**: Card: `CARD123456`, PIN: `1234`
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "JWT tokeni muodossa: `<kopioitu_token>`"
+  
+  schemas:
+    LoginRequest:
+      type: object
+      required: ["idCard", "pin"]
+      properties:
+        idCard:
+          type: string
+          description: Card ID (Admin kortilla kirjautuaksesi käytä ADMINCARD)
+          example: "ADMINCARD"
+        pin:
+          type: string
+          description: PIN code (Admin PIN on admin123)
+          example: "admin123"
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: "JWT token, käytä TOKEN-painiketta tallentaaksesi sen"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        card:
+          $ref: "#/components/schemas/Card"
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountSummary"
+        requiresAccountSelection:
+          type: boolean
+          example: true
+
+    Card:
+      type: object
+      properties:
+        idCard:
+          type: string
+          example: "ADMINCARD"
+        idUser:
+          type: string
+          example: "ADMIN"
+        isLocked:
+          type: boolean
+          example: false
+
+    Account:
+      type: object
+      properties:
+        idAccount:
+          type: integer
+          example: 14
+        idUser:
+          type: string
+          example: "TESTUSER1"
+        balance:
+          type: number
+          format: double
+          example: 500.00
+        creditLimit:
+          type: number
+          format: double
+          example: 0.00
+
+    AccountSummary:
+      type: object
+      properties:
+        idAccount:
+          type: integer
+          example: 14
+        type:
+          type: string
+          enum: [debit, credit]
+          example: "debit"
+        balance:
+          type: number
+          format: double
+          example: 500.00
+        creditLimit:
+          type: number
+          format: double
+          example: 0.00
+
+    User:
+      type: object
+      properties:
+        idUser:
+          type: string
+          example: "USER123"
+        firstName:
+          type: string
+          example: "Matti"
+        lastName:
+          type: string
+          example: "Meikäläinen"
+        streetAddress:
+          type: string
+          example: "Testikatu 1"
+        role:
+          type: string
+          enum: [user, admin]
+          example: "user"
+
+    WithdrawRequest:
+      type: object
+      required: ["amount"]
+      properties:
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 40.00
+
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with card and PIN
+      description: |
+        Kirjaudu sisään kortilla ja PIN-koodilla. 
+        
+        **TÄRKEÄÄ**: Kopioi vastauksen `token`-kenttä ja käytä "Authorize"-painiketta tallentaaksesi sen!
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              admin:
+                summary: Admin login
+                value:
+                  idCard: "ADMINCARD"
+                  pin: "admin123"
+              user:
+                summary: Regular user login
+                value:
+                  idCard: "CARD123456"
+                  pin: "1234"
+      responses:
+        "200":
+          description: Successful login - KOPIOI TOKEN JA KÄYTÄ AUTHORIZE-PAINIKETTA!
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (invalidate token)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully logged out
+        "401":
+          description: No valid token provided
+
+  /atm/{id}:
+    get:
+      tags: [ATM (User)]
+      summary: Hae tilin saldo
+      description: Vaatii autentikoinnin ja tilin omistajuuden
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Account ID
+          schema:
+            type: integer
+          example: 14
+      responses:
+        "200":
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "401":
+          description: Tunnistautuminen epäonnistui
+        "403":
+          description: Pääsy kielletty - ei sinun tilisi
+        "404":
+          description: Tiliä ei löydy
+
+  /atm/{id}/logs:
+    get:
+      tags: [ATM (User)]
+      summary: Hae tilin tapahtumahistoria
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 14
+      responses:
+        "200":
+          description: Tapahtumalogit
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        idLog:
+                          type: integer
+                        time:
+                          type: string
+                          format: date-time
+                        balanceChange:
+                          type: number
+                          format: double
+
+  /atm/{id}/withdraw:
+    post:
+      tags: [ATM (User)]
+      summary: Nosta rahaa (debit-tili)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 14
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawRequest"
+      responses:
+        "200":
+          description: Nosto onnistui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  idAccount:
+                    type: integer
+                  balance:
+                    type: number
+                    format: double
+                  logged:
+                    type: boolean
+        "400":
+          description: Riittämätön saldo tai virheellinen summa
+
+  /atm/{id}/credit/withdraw:
+    post:
+      tags: [ATM (User)]
+      summary: Nosta rahaa (credit-tili)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawRequest"
+      responses:
+        "200":
+          description: Luoton nosto onnistui
+        "400":
+          description: Ylittää luottorajan
+
+  /users/{idUser}:
+    get:
+      tags: [Users (Admin)]
+      summary: Hae käyttäjä ID:llä
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idUser
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "TESTUSER1"
+      responses:
+        "200":
+          description: Käyttäjän tiedot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Käyttäjää ei löydy
+
+    put:
+      tags: [Users (Admin)]
+      summary: Päivitä käyttäjän tiedot
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idUser
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                streetAddress:
+                  type: string
+      responses:
+        "200":
+          description: Käyttäjä päivitetty
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+    delete:
+      tags: [Users (Admin)]
+      summary: Poista käyttäjä
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idUser
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Käyttäjä poistettu
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+  /users:
+    post:
+      tags: [Users (Admin)]
+      summary: Luo uusi käyttäjä
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["idUser", "firstName", "lastName", "streetAddress"]
+              properties:
+                idUser:
+                  type: string
+                  example: "USER999"
+                firstName:
+                  type: string
+                  example: "Uusi"
+                lastName:
+                  type: string
+                  example: "Käyttäjä"
+                streetAddress:
+                  type: string
+                  example: "Uusikatu 1"
+                role:
+                  type: string
+                  enum: [user, admin]
+                  default: user
+      responses:
+        "201":
+          description: Käyttäjä luotu
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "409":
+          description: Käyttäjä on jo olemassa
+
+  /cards:
+    get:
+      tags: [Cards (Admin)]
+      summary: Hae kaikki kortit
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Korttien lista
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Card"
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+    post:
+      tags: [Cards (Admin)]
+      summary: Luo uusi kortti
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["idCard", "idUser", "cardPIN"]
+              properties:
+                idCard:
+                  type: string
+                  example: "CARD999"
+                idUser:
+                  type: string
+                  example: "USER123"
+                cardPIN:
+                  type: string
+                  example: "1234"
+      responses:
+        "201":
+          description: Kortti luotu
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+  /cards/{idCard}:
+    get:
+      tags: [Cards (Admin)]
+      summary: Hae kortti ID:llä
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idCard
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Kortin tiedot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Card"
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+    delete:
+      tags: [Cards (Admin)]
+      summary: Poista kortti
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idCard
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Kortti poistettu
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+  /cards/{idCard}/lock:
+    post:
+      tags: [Cards (Admin)]
+      summary: Lukitse kortti
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idCard
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Kortti lukittu
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+  /cards/{idCard}/unlock:
+    post:
+      tags: [Cards (Admin)]
+      summary: Avaa kortin lukitus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idCard
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Kortin lukitus avattu
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+  /accounts/{id}:
+    get:
+      tags: [Accounts (Admin)]
+      summary: Hae tili ID:llä
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Tilin tiedot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+  /log/{idAccount}:
+    get:
+      tags: [Logs (Admin)]
+      summary: Hae tilin tapahtumalogit
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idAccount
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Tapahtumalogit
+        "403":
+          description: Admin-oikeudet vaaditaan

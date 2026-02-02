@@ -76,5 +76,6 @@ jobs:
                       echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
                       echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
                       echo "PIN_PEPPER=${{ secrets.PIN_PEPPER }}" >> .env
+                      echo "SERVER_HOST=${{ secrets.SERVER_HOST }}" >> .env
                       
                       pm2 reload backend --update-env
