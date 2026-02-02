@@ -123,9 +123,9 @@ account::account(int idAccount, const QString& idUser, const QString& fName, Api
             QJsonArray arr;
             for (const auto& item : logs) {
                 QJsonObject o;
-                o["idlog"] = item.idLog;
+                o["idLog"] = item.idLog;
                 o["time"] = item.time;
-                o["balancechange"] = item.balanceChange;
+                o["balanceChange"] = item.balanceChange;
                 arr.append(o);
             }
             // Serialize JSON to bytes and pass it to the log view component
