@@ -264,24 +264,21 @@ void MainWindow::resetInactivityTimer()
 
 void MainWindow::returnToInitialState()
 {
-    for (QWidget* w : QApplication::topLevelWidgets()) {
-        if (w && w != this) {
-            w->close();
-        }
-    }
-    if (pinTimeoutTimer) pinTimeoutTimer->stop();
-    qDebug() << "Returning to initial UI state due to inactivity";
+    // Ensure MainWindow is visible before closing other windows, otherwise the app may quit when the last visible window closes
+    isSplashScreen = false;
+    this->showMaximized();
 
     // Clear login
+    setMainControlsVisible(true);
     ui->user->clear();
     ui->password->clear();
     ui->errorLabel->setVisible(false);
-
-    // Show login view
-    isSplashScreen = false;
-    setMainControlsVisible(true);
     ui->user->setFocus();
 
-    // Restart the inactivity timer
+    // Now close all other top-level windows
+    for (QWidget* w : QApplication::topLevelWidgets()) {
+        if (w && w != this) w->close();
+    }
+
     inactivityTimer->start();
 }
