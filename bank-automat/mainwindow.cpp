@@ -16,8 +16,6 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QStyle>
-#include "ui_mainwindow.h"
-#include <QLineEdit>
 
 // MainWindow is the first window shown when the application starts
 // It displays a splash screen, then a login form and handles user authentication
@@ -95,30 +93,30 @@ MainWindow::MainWindow(QWidget *parent)
     // Allow pressing Enter in either field to trigger login
     connect(ui->user, &QLineEdit::returnPressed,
         this, &MainWindow::on_KirjauduButton_clicked);
-        connect(ui->password, &QLineEdit::returnPressed,
-            this, &MainWindow::on_KirjauduButton_clicked);
+
+    connect(ui->password, &QLineEdit::returnPressed,
+        this, &MainWindow::on_KirjauduButton_clicked);
             
-            // Hide login controls while splash screen is shown
-            setMainControlsVisible(false);
+        // Hide login controls while splash screen is shown
+        setMainControlsVisible(false);
             
-            // Setup splash screen timer (3 seconds)
-            splashTimer = new QTimer(this);
-            connect(splashTimer, &QTimer::timeout,
-                this, &MainWindow::showMainScreen);
-                splashTimer->start(3000);
+    // Setup splash screen timer (3 seconds)
+    splashTimer = new QTimer(this);
+    connect(splashTimer, &QTimer::timeout,
+        this, &MainWindow::showMainScreen);
+        splashTimer->start(3000);
 
-                // PIN inactivity timer (10s), single-shot
-                pinTimeoutTimer = new QTimer(this);
-                pinTimeoutTimer->setSingleShot(true);
-                pinTimeoutTimer->setInterval(10'000);
+    // PIN inactivity timer (10s), single-shot
+    pinTimeoutTimer = new QTimer(this);
+    pinTimeoutTimer->setSingleShot(true);
+    pinTimeoutTimer->setInterval(10'000);
 
-                connect(pinTimeoutTimer, &QTimer::timeout, this, &MainWindow::restartApplication);
+    connect(pinTimeoutTimer, &QTimer::timeout, this, &MainWindow::restartApplication);
 
-                // Start timer only on first actual user edit in PIN field,
-                // and reset on every subsequent edit.
-                connect(ui->password, &QLineEdit::textEdited, this, [this](const QString&) {
-                    armOrResetPinTimeout();
-                });
+    // Start timer only on first actual user edit in PIN field and reset on every subsequent edit
+    connect(ui->password, &QLineEdit::textEdited, this, [this](const QString&) {
+        armOrResetPinTimeout();
+    });
 }
 
 MainWindow::~MainWindow()
