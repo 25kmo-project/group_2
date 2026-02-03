@@ -57,6 +57,15 @@ struct LogItemDto {
     double balanceChange = 0.0; // Amount changed (+ / -)
 };
 
+// Data Transfer Object for all users
+struct AllUsers {
+    QString idUser;
+    QString firstName;
+    QString lastName;
+    QString streetAddress;
+    QString role;
+};
+
 // ApiClient is responsible for all HTTP communication with the backend
 // It wraps QNetworkAccessManager and exposes high-level API operations (login, logout, balance, withdrawals, logs) via Qt signals
 class ApiClient : public QObject
@@ -84,12 +93,14 @@ public:
     void getAccountLogs(int idAccount);
 
     void getUser(QString idUser);
+    void getAllUsers();
     void addUser(QString idUser, QString fname, QString lname, QString streetaddress, QString role);
     //Role cannot currenly be changed with this due to db procedure not having it
     void updateUser(QString idUser, QString fname, QString lname, QString streetaddress); //, QString role);
     void deleteUser(QString idUser);
 
     void getAccount(int idAccount);
+    void getAllAccounts();
     void addAccount(QString idUser, double balance, double creditLimit);
     void updateCreditLimit(int idAccount, double creditLimit);
     void deleteAccount(int idAccount);
@@ -109,6 +120,8 @@ signals:
 
     // Emitted when user is received
     void userReceived(const QByteArray& userInfo);
+    // Emitted when all users are receives
+    void allUsersReceived(const QByteArray& allUsers);
     // Emitted when user is created
     void userCreated(QString idUser);
     // Emitted when user is updated
@@ -118,6 +131,8 @@ signals:
 
     // Emitted when account is received
     void accountReceived(const QByteArray& accountInfo);
+    // Emitted when all accounts are received
+    void allAccountsReceived(const QByteArray& allAccounts);
     // Emitted when account is created
     void accountCreated(const QByteArray& accountInfo);
     // Emitted when creditlimit is updated

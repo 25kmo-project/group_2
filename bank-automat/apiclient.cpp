@@ -263,14 +263,26 @@ void ApiClient::sendNoBody(const QString& method, const QString& path)
 
         // Special-case: GET /users/{idUser} returns user data as an object
         if (path.startsWith("/users/")) {
-            QByteArray o = doc.toJson(QJsonDocument::Compact);
-            emit userReceived(o);
+            QByteArray user = doc.toJson(QJsonDocument::Compact);
+            emit userReceived(user);
+        }
+
+        // Special_case: GET /users returns all users as an QByteArray
+        if (path.startsWith("/users")) {
+            QByteArray users = doc.toJson(QJsonDocument::Compact);
+            emit allUsersReceived(users);
         }
 
         // Special-case: GET /accounts/{idAccount} returns account data as an object
         if (path.startsWith("/accounts") && method == "GET") {
             QByteArray o = doc.toJson(QJsonDocument::Compact);
             emit accountReceived(o);
+        }
+
+        // Special-case: GET /accounts returns all users as an QByteArray
+        if (path.startsWith("/accounts") && method == "GET") {
+            QByteArray accounts = doc.toJson(QJsonDocument::Compact);
+            emit allAccountsReceived(accounts);
         }
 
         reply->deleteLater();
@@ -378,6 +390,11 @@ void ApiClient::getUser(QString idUser)
     sendNoBody("GET", QString("/users/%1").arg(idUser));
 }
 
+void ApiClient::getAllUsers()
+{
+    sendNoBody("GET", QString("/users"));
+}
+
 void ApiClient::addUser(QString idUser, QString firstName, QString lastName, QString streetaddress, QString role)
 {
     sendJson("POST", QString("/users"), QJsonObject{{"idUser", idUser},{"firstName", firstName},{"lastName",lastName},{"streetAddress", streetaddress}, {"role", role}});
@@ -397,6 +414,11 @@ void ApiClient::deleteUser(QString idUser)
 void ApiClient::getAccount(int idAccount)
 {
     sendNoBody("GET", QString("/accounts/%1").arg(idAccount));
+}
+
+void ApiClient::getAllAccounts()
+{
+    sendNoBody("GET", QString("/accounts"));
 }
 
 void ApiClient::addAccount(QString idUser, double balance, double creditLimit)

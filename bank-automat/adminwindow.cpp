@@ -17,6 +17,7 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
     ui->setupUi(this);
     ui->labelAdminUser->setText("Adminkäyttäjä: "+m_idUser);
     ui->stackedAdmin->setCurrentWidget(ui->screenAsiakkaat);
+    m_api->getAllUsers();
 
     connect(ui->labelTiliID, &QLineEdit::returnPressed, this, &adminwindow::on_btnLokitHae_clicked);
 
@@ -134,6 +135,17 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
         ui->lineAsiakkaatRole->clear();
     });
 
+    connect(m_api, &ApiClient::allUsersReceived, this, [this](QByteArray allUsersInfo) {
+        userData->setUserData(allUsersInfo);
+        userData->updateModel();
+        //clears inputs
+        ui->lineAsiakkaatID->clear();
+        ui->lineAsiakkaatFname->clear();
+        ui->lineAsiakkaatLname->clear();
+        ui->lineAsiakkaatAddress->clear();
+        ui->lineAsiakkaatRole->clear();
+    });
+
     connect(m_api, &ApiClient::userCreated, this, [this](QString id) {
         //Just in case something goes wrong it doesnt crash with empty id
         if (!id.isEmpty()) {
@@ -162,6 +174,16 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
 
     connect(m_api, &ApiClient::accountReceived, this, [this](QByteArray accountInfo) {
         accountsData->setAccountsData(accountInfo);
+        accountsData->updateModel();
+        //clears inputs
+        ui->lineTilitIdaccount->clear();
+        ui->lineTilitIduser->clear();
+        ui->lineTilitBalance->clear();
+        ui->lineTilitCreditlimit->clear();
+    });
+
+    connect(m_api, &ApiClient::allAccountsReceived, this, [this](QByteArray allAccountsInfo) {
+        accountsData->setAccountsData(allAccountsInfo);
         accountsData->updateModel();
         //clears inputs
         ui->lineTilitIdaccount->clear();
@@ -216,11 +238,13 @@ void adminwindow::paintEvent(QPaintEvent *event)
 void adminwindow::on_btnAsiakkaatLowBar_clicked()
 {
     ui->stackedAdmin->setCurrentWidget(ui->screenAsiakkaat);
+    m_api->getAllUsers();
 }
 
 void adminwindow::on_btnTilitLowBar_clicked()
 {
     ui->stackedAdmin->setCurrentWidget(ui->screenTilit);
+    m_api->getAllAccounts();
 }
 
 void adminwindow::on_btnKortitLowBar_clicked()
@@ -364,5 +388,17 @@ void adminwindow::on_btnTiliPoistaTili_clicked()
             m_api->deleteAccount(intIdAccount);
         }
     }
+}
+
+
+void adminwindow::on_btnKayttajaHaeKaikki_clicked()
+{
+    m_api->getAllUsers();
+}
+
+
+void adminwindow::on_btnTiliHaeKaikki_clicked()
+{
+    m_api->getAllAccounts();
 }
 
