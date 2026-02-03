@@ -12,6 +12,9 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QAction>
+#include <QProcess>
+#include <QCoreApplication>
+#include <QEvent>
 
 #include "apiclient.h"
 
@@ -34,6 +37,8 @@ class MainWindow : public QMainWindow
     ~MainWindow();
     
     protected:
+    // Event filter used to detect user activity (keyboard/mouse) and reset inactivity timers
+    bool eventFilter(QObject* obj, QEvent* event) override;
     // Overridden paint event to draw custom background images
     void paintEvent(QPaintEvent *event) override;
     
@@ -44,18 +49,33 @@ class MainWindow : public QMainWindow
     void on_KirjauduButton_clicked();
     
     private:
+    // Global inactivity timer (e.g. 30s idle -> return to initial state)
+    QTimer* inactivityTimer = nullptr;
+
+    // Resets the global inactivity timer whenever user activity is detected
+    void resetInactivityTimer();
+    // Returns the UI to the initial state (e.g. clears fields, shows splash/login as needed)
+    void returnToInitialState();
+
+    // PIN entry inactivity timer (e.g. 10s idle while entering PIN -> reset/clear PIN)
+    QTimer* pinTimeoutTimer = nullptr;
+
+    // Arms or resets the PIN timeout timer (called on input activity in the PIN field)
+    void armOrResetPinTimeout();
+    // Restarts the entire application process (hard reset)
+    void restartApplication();
     // Action used to toggle password visibility in the PIN field
     QAction* togglePasswordAction = nullptr;
     // Tracks whether the password is currently visible
     bool passwordVisible = false;
 
     // Pointer to the UI elements generated from mainwindow.ui
-    Ui::MainWindow *ui;
+    Ui::MainWindow *ui = nullptr;
     
     // True while the splash screen is being displayed
-    bool isSplashScreen;
+    bool isSplashScreen = true;
     // Timer controlling the splash screen duration
-    QTimer *splashTimer;
+    QTimer *splashTimer = nullptr;
     
     // API client responsible for backend communication
     ApiClient* api = nullptr;

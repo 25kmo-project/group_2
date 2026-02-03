@@ -12,12 +12,11 @@
 #include <QFile>
 #include <QLineEdit>
 #include "ui_mainwindow.h"
+#include <QApplication>
 
 #include <QPainter>
 #include <QPixmap>
 #include <QStyle>
-#include "ui_mainwindow.h"
-#include <QLineEdit>
 
 // MainWindow is the first window shown when the application starts
 // It displays a splash screen, then a login form and handles user authentication
@@ -66,10 +65,14 @@ MainWindow::MainWindow(QWidget *parent)
             // Open the account selection window
             accountSelectWindow = new accountselect(loginResult, api, nullptr);
             accountSelectWindow->setAttribute(Qt::WA_DeleteOnClose);
+            connect(accountSelectWindow, &QObject::destroyed, this, [this]() {
+                accountSelectWindow = nullptr;
+            });
             accountSelectWindow->showMaximized();
             
+            if (pinTimeoutTimer) pinTimeoutTimer->stop();
             // Close the login window
-            this->close();
+            this->hide();
         }
     );
     
@@ -94,17 +97,45 @@ MainWindow::MainWindow(QWidget *parent)
     // Allow pressing Enter in either field to trigger login
     connect(ui->user, &QLineEdit::returnPressed,
         this, &MainWindow::on_KirjauduButton_clicked);
-        connect(ui->password, &QLineEdit::returnPressed,
-            this, &MainWindow::on_KirjauduButton_clicked);
+
+    connect(ui->password, &QLineEdit::returnPressed,
+        this, &MainWindow::on_KirjauduButton_clicked);
             
-            // Hide login controls while splash screen is shown
-            setMainControlsVisible(false);
+    // Hide login controls while splash screen is shown
+    setMainControlsVisible(false);
             
-            // Setup splash screen timer (3 seconds)
-            splashTimer = new QTimer(this);
-            connect(splashTimer, &QTimer::timeout,
-                this, &MainWindow::showMainScreen);
-                splashTimer->start(3000);
+    // Setup splash screen timer (3 seconds)
+    splashTimer = new QTimer(this);
+
+    connect(splashTimer, &QTimer::timeout,
+        this, &MainWindow::showMainScreen);
+    splashTimer->start(3000);
+
+    // PIN inactivity timer (10s), single-shot
+    pinTimeoutTimer = new QTimer(this);
+    pinTimeoutTimer->setSingleShot(true);
+    pinTimeoutTimer->setInterval(10'000);
+
+    connect(pinTimeoutTimer, &QTimer::timeout, this, &MainWindow::restartApplication);
+
+    // Start timer only on first actual user edit in PIN field and reset on every subsequent edit
+    connect(ui->password, &QLineEdit::textEdited, this, [this](const QString&) {
+        armOrResetPinTimeout();
+    });
+
+    // Global inactivity timer (30s)
+    inactivityTimer = new QTimer(this);
+    inactivityTimer->setSingleShot(true);
+    inactivityTimer->setInterval(30'000);
+
+    connect(inactivityTimer, &QTimer::timeout,
+        this, &MainWindow::returnToInitialState);
+
+    // Start listening to all UI events
+    qApp->installEventFilter(this);
+
+    // Start timer immediately
+    inactivityTimer->start();
 }
 
 MainWindow::~MainWindow()
@@ -130,6 +161,8 @@ void MainWindow::setMainControlsVisible(bool visible)
     ui->errorLabel->setVisible(false);
     
     if (visible) {
+        // Stop any previous PIN timeout; it must not run until first keypress
+        if (pinTimeoutTimer) pinTimeoutTimer->stop();
         // Reset password state when login screen becomes visible
         passwordVisible = false;
         ui->password->clear();
@@ -170,4 +203,82 @@ void MainWindow::paintEvent(QPaintEvent *)
     
     // Scale and draw background to fill the window
     painter.drawPixmap(rect(), bg);
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    switch (event->type()) {
+        case QEvent::MouseMove:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::KeyPress:
+        case QEvent::Wheel:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+            resetInactivityTimer();
+            break;
+        default:
+            break;
+    }
+
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::armOrResetPinTimeout()
+{
+    // Start on first keypress, reset on every keypress
+    if (pinTimeoutTimer->isActive()) {
+        pinTimeoutTimer->stop();
+    }
+    pinTimeoutTimer->start();
+}
+
+void MainWindow::restartApplication()
+{
+    // Best-effort: start new instance, then quit current
+    const QString program = QCoreApplication::applicationFilePath();
+    const QStringList args = QCoreApplication::arguments();
+
+    const bool started = QProcess::startDetached(program, args);
+    if (!started) {
+        // Fallback: if restart fails, at least reset UI to start/login state
+        ui->user->clear();
+        ui->password->clear();
+        ui->errorLabel->setVisible(false);
+        ui->user->setFocus();
+        return;
+    }
+
+    QCoreApplication::quit();
+}
+
+void MainWindow::resetInactivityTimer()
+{
+    if (!inactivityTimer) return;
+
+    if (inactivityTimer->isActive())
+        inactivityTimer->stop();
+
+    inactivityTimer->start();
+}
+
+void MainWindow::returnToInitialState()
+{
+    // Ensure MainWindow is visible before closing other windows, otherwise the app may quit when the last visible window closes
+    isSplashScreen = false;
+    this->showMaximized();
+
+    // Clear login
+    setMainControlsVisible(true);
+    ui->user->clear();
+    ui->password->clear();
+    ui->errorLabel->setVisible(false);
+    ui->user->setFocus();
+
+    // Now close all other top-level windows
+    for (QWidget* w : QApplication::topLevelWidgets()) {
+        if (w && w != this) w->close();
+    }
+
+    inactivityTimer->start();
 }
