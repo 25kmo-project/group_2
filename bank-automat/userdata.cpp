@@ -18,8 +18,8 @@ void userdata::setUserData(const QByteArray &newUserData)
     userDataArray = newUserData;
     QJsonDocument json_doc = QJsonDocument::fromJson(userDataArray);
 
-    if(json_doc.isArray()) {
-        QJsonArray json_array=json_doc.array();
+    if (json_doc.isArray()) {
+        QJsonArray json_array = json_doc.array();
         for (const QJsonValue &value : json_array) {
             userDataList.append(user::mapJson(value.toObject()));
         }

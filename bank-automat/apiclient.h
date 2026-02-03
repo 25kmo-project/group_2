@@ -105,6 +105,11 @@ public:
     void updateCreditLimit(int idAccount, double creditLimit);
     void deleteAccount(int idAccount);
 
+    //void addCard
+
+    void getAllCards();
+    void getCard(QString idCard);
+
     void getAdminLogs(int idAccount);
 
 signals:
@@ -142,6 +147,12 @@ signals:
     // Emittend when account is deleted
     void accountDeleted();
 
+    // Emitted when all cards are received
+    void allCardsReceived(const QByteArray& allCards);
+    // Emitted when a card is received
+    void cardReceived(const QByteArray& allCards);
+
+    // Emitted when all logs are received
     void adminLogsReceived(const QByteArray& adminLogs);
 
     // Emitted whenever any API request fails

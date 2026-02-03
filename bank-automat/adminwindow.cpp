@@ -21,58 +21,6 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
 
     connect(ui->lineLokitTiliID, &QLineEdit::returnPressed, this, &adminwindow::on_btnLokitHae_clicked);
 
-    //testidataa
-    // testUserData = R"([
-    // {"idUser": "1", "firstName": "Aku", "lastName": "Ankka", "streetAddress": "Paratiisitie 13", "role": "user"},
-    // {"idUser": "2", "firstName": "Roope", "lastName": "Ankka", "streetAddress": "Rahasäiliö 1", "role": "admin"},
-    // {"idUser": "3", "firstName": "Mikki", "lastName": "Hiiri", "streetAddress": "Jokikatu 43", "role": "user"},
-    // {"idUser": "4", "firstName": "Hessu", "lastName": "Hopo", "streetAddress": "Koivukatu 7", "role": "user"}
-    // ])";
-
-    // testAccountsData = R"([
-    // {"idAccount": 1, "idUser": "1", "balance": 500, "crediLimit": 0},
-    // {"idAccount": 2, "idUser": "2", "balance": 1000000, "creditLimit": 0},
-    // {"idAccount": 3, "idUser": "2", "balance": 10000, "creditLimit": 50000},
-    // {"idAccount": 4, "idUser": "3", "balance": 25000, "creditLimit": 0},
-    // {"idAccount": 5, "idUser": "3", "balance": 250, "creditLimit": 1500},
-    // {"idAccount": 6, "idUser": "4", "balance": 1000, "creditLimit": 0}
-    // ])";
-
-    testCardData = R"([
-    {"idCard": "1", "cardPIN": "$2b$10$nS6H0mXIsmR8S.r6Yp89neMv5.7.8JmQ6mGzO8Z6V6H8N6f6Y6e6q", "idUser": "1", "isLocked": false},
-    {"idCard": "2", "cardPIN": "$2b$10$Eixza975pS8En6Z6v6f6uef6u6e6u6e6u6e6u6e6u6e6u6e6u6e6u", "idUser": "2", "isLocked": false},
-    {"idCard": "3", "cardPIN": "$2b$10$K7L9M0N1O2P3Q4R5S6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K", "idUser": "3", "isLocked": false},
-    {"idCard": "4", "cardPIN": "$2b$10$K7L9M0N1O2P3Q4R5S6f6uef6u6e6u6e6A4BzO8Z6V6H8G0H1I.7.8", "idUser": "4", "isLocked": true}
-    ])";
-
-    // testLogData = R"([
-    // {"idLog": 1, "time": "2026-01-18 12:00", "balanceChange": -20.50},
-    // {"idLog": 2, "time": "2026-01-18 12:05", "balanceChange": 100.00},
-    // {"idLog": 3, "time": "2026-01-18 13:30", "balanceChange": -5.00},
-    // {"idLog": 4, "time": "2026-01-18 14:15", "balanceChange": -12.80},
-    // {"idLog": 5, "time": "2026-01-18 15:00", "balanceChange": 2450.00},
-    // {"idLog": 6, "time": "2026-01-18 16:45", "balanceChange": -65.20},
-    // {"idLog": 7, "time": "2026-01-19 08:30", "balanceChange": -4.50},
-    // {"idLog": 8, "time": "2026-01-19 09:12", "balanceChange": -110.00},
-    // {"idLog": 9, "time": "2026-01-19 11:50", "balanceChange": 15.00},
-    // {"idLog": 10, "time": "2026-01-19 13:20", "balanceChange": -22.15},
-    // {"idLog": 11, "time": "2026-01-19 17:05", "balanceChange": -45.00},
-    // {"idLog": 12, "time": "2026-01-20 10:00", "balanceChange": -3.20},
-    // {"idLog": 13, "time": "2026-01-20 12:30", "balanceChange": 50.00},
-    // {"idLog": 14, "time": "2026-01-20 15:45", "balanceChange": -200.00},
-    // {"idLog": 15, "time": "2026-01-20 18:20", "balanceChange": -8.90},
-    // {"idLog": 16, "time": "2026-01-21 09:15", "balanceChange": -35.00},
-    // {"idLog": 17, "time": "2026-01-21 11:40", "balanceChange": 120.50},
-    // {"idLog": 18, "time": "2026-01-21 14:05", "balanceChange": -12.30},
-    // {"idLog": 19, "time": "2026-01-21 19:50", "balanceChange": -85.00},
-    // {"idLog": 20, "time": "2026-01-22 08:00", "balanceChange": 3100.00},
-    // {"idLog": 21, "time": "2026-01-22 10:25", "balanceChange": -4.20},
-    // {"idLog": 22, "time": "2026-01-22 13:10", "balanceChange": -55.60},
-    // {"idLog": 23, "time": "2026-01-22 16:45", "balanceChange": 25.00},
-    // {"idLog": 24, "time": "2026-01-23 12:15", "balanceChange": -150.00},
-    // {"idLog": 25, "time": "2026-01-23 15:30", "balanceChange": -9.99}
-    // ])";
-
     userData = new userdata(this);
     ui->tableUserData->setModel(userData->getModel());
     userData->setUserData(testUserData);
@@ -111,8 +59,7 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
     ui->tableAccountsData->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     ui->tableAccountsData->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
 
-    ui->tableCardData->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
-    ui->tableCardData->setColumnWidth(0, 80);
+    ui->tableCardData->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableCardData->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->tableCardData->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->tableCardData->setColumnWidth(2, 80);
@@ -223,11 +170,29 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
         ui->lineTilitCreditlimit->clear();
     });
 
+    connect(m_api, &ApiClient::allCardsReceived, this, [this](QByteArray allCards) {
+        cardData->setCardData(allCards);
+        ui->lineKortitIdcard->clear();
+        ui->lineKortitLukossa->clear();
+        ui->lineKortitPinYritykset->clear();
+        ui->lineKortitIdUser->clear();
+    });
+
+    connect(m_api, &ApiClient::cardReceived, this, [this](QByteArray card) {
+        cardData->setCardData(card);
+        ui->lineKortitIdcard->clear();
+        ui->lineKortitLukossa->clear();
+        ui->lineKortitPinYritykset->clear();
+        ui->lineKortitIdUser->clear();
+        qDebug() << "Signal received";
+    });
+
     connect(m_api, &ApiClient::adminLogsReceived, this, [this](QByteArray adminLogs) {
         logData->setLog(adminLogs);
         //clears input
         ui->lineLokitTiliID->clear();
     });
+
 }
 
 adminwindow::~adminwindow()
@@ -258,6 +223,7 @@ void adminwindow::on_btnTilitLowBar_clicked()
 void adminwindow::on_btnKortitLowBar_clicked()
 {
     ui->stackedAdmin->setCurrentWidget(ui->screenKortit);
+    m_api->getAllCards();
 }
 
 void adminwindow::on_btnLokitLowBar_clicked()
@@ -415,5 +381,26 @@ void adminwindow::on_btnKayttajaHaeKaikki_clicked()
 void adminwindow::on_btnTiliHaeKaikki_clicked()
 {
     m_api->getAllAccounts();
+}
+
+
+void adminwindow::on_btnKorttiLuoUusi_clicked()
+{
+
+}
+
+
+void adminwindow::on_btnKorttiHaeKaikki_clicked()
+{
+    m_api->getAllCards();
+}
+
+
+void adminwindow::on_btnKorttiHaeKortti_clicked()
+{
+    QString idCard = ui->lineKortitIdcard->text().trimmed();
+    if (!idCard.isEmpty()) {
+        m_api->getCard(idCard);
+    }
 }
 

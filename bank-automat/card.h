@@ -9,9 +9,10 @@ class card
 public:
     card();
     QString idCard;
-    QString cardPIN;
     QString idUser;
     int isLocked;
+    int pinAttempst;
+
     static card mapJson(const QJsonObject &json);
 };
 

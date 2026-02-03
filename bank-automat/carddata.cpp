@@ -8,7 +8,7 @@ carddata::carddata(QObject *parent) : QObject(parent){
     tableModel = new QStandardItemModel(this);
     tableModel->setRowCount(0);
     tableModel->setColumnCount(4);
-    tableModel->setHorizontalHeaderLabels({"KortinID", "PIN", "KayttäjäID", "Lukossa"});
+    tableModel->setHorizontalHeaderLabels({"KortinID", "KayttäjäID", "Lukossa", "PIN yrityksiä"});
 }
 
 void carddata::setCardData(const QByteArray &newCardData)
@@ -16,17 +16,17 @@ void carddata::setCardData(const QByteArray &newCardData)
     cardDataList.clear();
     cardDataArray = newCardData;
     QJsonDocument json_doc = QJsonDocument::fromJson(cardDataArray);
-    QJsonArray json_array=json_doc.array();
 
-    //QVector<card> loglist;
-    for (const QJsonValue &value : json_array) {
-        //jsonista c++ objektiksi
-        if (value.isObject()) {
-            card cardData = card::mapJson(value.toObject());
-            cardDataList.append(cardData);
+    if (json_doc.isArray()) {
+        QJsonArray json_array = json_doc.array();
+        for (const QJsonValue &value : json_array) {
+            cardDataList.append(card::mapJson(value.toObject()));
         }
     }
-    //nollataan varmuuden vuoksi
+    else if (json_doc.isObject()) {
+        cardDataList.append(card::mapJson(json_doc.object()));
+    }
+
     tableModel->setRowCount(0);
 
     updateModel();
@@ -42,16 +42,16 @@ void carddata::updateModel()
         QStandardItem *idCardItem = new QStandardItem(card.idCard);
         idCardItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
         tableModel->setItem(row, 0, idCardItem );
-        QStandardItem *PINItem = new QStandardItem(card.cardPIN);
-        PINItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-        tableModel->setItem(row, 1, PINItem);
         QStandardItem *idUserItem = new QStandardItem(card.idUser);
         idUserItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-        tableModel->setItem(row, 2 , idUserItem);
+        tableModel->setItem(row, 1 , idUserItem);
         QString islockedString = card.isLocked ? "True" : "False";
         QStandardItem *lockedItem = new QStandardItem(islockedString);
         lockedItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-        tableModel->setItem(row, 3, lockedItem);
+        tableModel->setItem(row, 2, lockedItem);
+        QStandardItem *pinItem = new QStandardItem(QString::number(card.pinAttempst));
+        pinItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+        tableModel->setItem(row, 3, pinItem);
     }
 }
 

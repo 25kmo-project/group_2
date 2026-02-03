@@ -1176,7 +1176,7 @@
          </palette>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="screenTilit">
          <property name="palette">
@@ -2765,7 +2765,7 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>20</y>
+            <y>90</y>
             <width>121</width>
             <height>51</height>
            </rect>
@@ -2778,7 +2778,7 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>90</y>
+            <y>160</y>
             <width>121</width>
             <height>51</height>
            </rect>
@@ -2791,7 +2791,7 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>160</y>
+            <y>230</y>
             <width>51</width>
             <height>51</height>
            </rect>
@@ -2804,7 +2804,7 @@
           <property name="geometry">
            <rect>
             <x>610</x>
-            <y>160</y>
+            <y>230</y>
             <width>51</width>
             <height>51</height>
            </rect>
@@ -2830,26 +2830,28 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>230</y>
-            <width>121</width>
+            <y>300</y>
+            <width>51</width>
             <height>51</height>
            </rect>
           </property>
           <property name="text">
-           <string>Päivitä linkitys</string>
+           <string>Päivitä
+linkitys</string>
           </property>
          </widget>
          <widget class="QPushButton" name="btnKorttiPoistaLinkitys">
           <property name="geometry">
            <rect>
-            <x>540</x>
+            <x>610</x>
             <y>300</y>
-            <width>121</width>
+            <width>51</width>
             <height>51</height>
            </rect>
           </property>
           <property name="text">
-           <string>Poista linkitys</string>
+           <string>Poista
+linkitys</string>
           </property>
          </widget>
          <widget class="QLineEdit" name="lineKortitIdcard">
@@ -2857,12 +2859,12 @@
            <rect>
             <x>20</x>
             <y>460</y>
-            <width>80</width>
+            <width>171</width>
             <height>22</height>
            </rect>
           </property>
          </widget>
-         <widget class="QLineEdit" name="lineKortitLocked">
+         <widget class="QLineEdit" name="lineKortitPinYritykset">
           <property name="geometry">
            <rect>
             <x>440</x>
@@ -2872,7 +2874,7 @@
            </rect>
           </property>
          </widget>
-         <widget class="QLineEdit" name="lineKortitIduser">
+         <widget class="QLineEdit" name="lineKortitLukossa">
           <property name="geometry">
            <rect>
             <x>360</x>
@@ -2882,14 +2884,42 @@
            </rect>
           </property>
          </widget>
-         <widget class="QLineEdit" name="lineKortitPIN">
+         <widget class="QLineEdit" name="lineKortitIdUser">
           <property name="geometry">
            <rect>
-            <x>100</x>
+            <x>190</x>
             <y>460</y>
-            <width>261</width>
+            <width>171</width>
             <height>22</height>
            </rect>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btnKorttiHaeKaikki">
+          <property name="geometry">
+           <rect>
+            <x>540</x>
+            <y>20</y>
+            <width>51</width>
+            <height>51</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Hae
+kaikki</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btnKorttiHaeKortti">
+          <property name="geometry">
+           <rect>
+            <x>610</x>
+            <y>20</y>
+            <width>51</width>
+            <height>51</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Hae
+kortti</string>
           </property>
          </widget>
         </widget>
