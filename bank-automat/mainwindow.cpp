@@ -68,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
             accountSelectWindow->setAttribute(Qt::WA_DeleteOnClose);
             accountSelectWindow->showMaximized();
             
+            if (pinTimeoutTimer) pinTimeoutTimer->stop();
             // Close the login window
             this->close();
         }
@@ -105,6 +106,19 @@ MainWindow::MainWindow(QWidget *parent)
             connect(splashTimer, &QTimer::timeout,
                 this, &MainWindow::showMainScreen);
                 splashTimer->start(3000);
+
+                // PIN inactivity timer (10s), single-shot
+                pinTimeoutTimer = new QTimer(this);
+                pinTimeoutTimer->setSingleShot(true);
+                pinTimeoutTimer->setInterval(10'000);
+
+                connect(pinTimeoutTimer, &QTimer::timeout, this, &MainWindow::restartApplication);
+
+                // Start timer only on first actual user edit in PIN field,
+                // and reset on every subsequent edit.
+                connect(ui->password, &QLineEdit::textEdited, this, [this](const QString&) {
+                    armOrResetPinTimeout();
+                });
 }
 
 MainWindow::~MainWindow()
@@ -130,6 +144,8 @@ void MainWindow::setMainControlsVisible(bool visible)
     ui->errorLabel->setVisible(false);
     
     if (visible) {
+        // Stop any previous PIN timeout; it must not run until first keypress
+        if (pinTimeoutTimer) pinTimeoutTimer->stop();
         // Reset password state when login screen becomes visible
         passwordVisible = false;
         ui->password->clear();
@@ -170,4 +186,32 @@ void MainWindow::paintEvent(QPaintEvent *)
     
     // Scale and draw background to fill the window
     painter.drawPixmap(rect(), bg);
+}
+
+void MainWindow::armOrResetPinTimeout()
+{
+    // Start on first keypress, reset on every keypress
+    if (pinTimeoutTimer->isActive()) {
+        pinTimeoutTimer->stop();
+    }
+        pinTimeoutTimer->start();
+}
+
+void MainWindow::restartApplication()
+{
+    // Best-effort: start new instance, then quit current
+    const QString program = QCoreApplication::applicationFilePath();
+    const QStringList args = QCoreApplication::arguments();
+
+    const bool started = QProcess::startDetached(program, args);
+    if (!started) {
+        // Fallback: if restart fails, at least reset UI to start/login state
+        ui->user->clear();
+        ui->password->clear();
+        ui->errorLabel->setVisible(false);
+        ui->user->setFocus();
+        return;
+    }
+
+    QCoreApplication::quit();
 }
