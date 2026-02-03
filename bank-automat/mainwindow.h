@@ -63,12 +63,12 @@ class MainWindow : public QMainWindow
     bool passwordVisible = false;
 
     // Pointer to the UI elements generated from mainwindow.ui
-    Ui::MainWindow *ui;
+    Ui::MainWindow *ui = nullptr;
     
     // True while the splash screen is being displayed
-    bool isSplashScreen;
+    bool isSplashScreen = true;
     // Timer controlling the splash screen duration
-    QTimer *splashTimer;
+    QTimer *splashTimer = nullptr;
     
     // API client responsible for backend communication
     ApiClient* api = nullptr;

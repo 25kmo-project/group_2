@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QLineEdit>
 #include "ui_mainwindow.h"
+#include <QApplication>
 
 #include <QPainter>
 #include <QPixmap>
@@ -64,11 +65,14 @@ MainWindow::MainWindow(QWidget *parent)
             // Open the account selection window
             accountSelectWindow = new accountselect(loginResult, api, nullptr);
             accountSelectWindow->setAttribute(Qt::WA_DeleteOnClose);
+            connect(accountSelectWindow, &QObject::destroyed, this, [this]() {
+                accountSelectWindow = nullptr;
+            });
             accountSelectWindow->showMaximized();
             
             if (pinTimeoutTimer) pinTimeoutTimer->stop();
             // Close the login window
-            this->close();
+            this->hide();
         }
     );
     
@@ -97,14 +101,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->password, &QLineEdit::returnPressed,
         this, &MainWindow::on_KirjauduButton_clicked);
             
-        // Hide login controls while splash screen is shown
-        setMainControlsVisible(false);
+    // Hide login controls while splash screen is shown
+    setMainControlsVisible(false);
             
     // Setup splash screen timer (3 seconds)
     splashTimer = new QTimer(this);
+
     connect(splashTimer, &QTimer::timeout,
         this, &MainWindow::showMainScreen);
-        splashTimer->start(3000);
+    splashTimer->start(3000);
 
     // PIN inactivity timer (10s), single-shot
     pinTimeoutTimer = new QTimer(this);
@@ -117,6 +122,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->password, &QLineEdit::textEdited, this, [this](const QString&) {
         armOrResetPinTimeout();
     });
+
+    // Global inactivity timer (30s)
+    inactivityTimer = new QTimer(this);
+    inactivityTimer->setSingleShot(true);
+    inactivityTimer->setInterval(30'000);
+
+    connect(inactivityTimer, &QTimer::timeout,
+        this, &MainWindow::returnToInitialState);
+
+    // Start listening to all UI events
+    qApp->installEventFilter(this);
+
+    // Start timer immediately
+    inactivityTimer->start();
 }
 
 MainWindow::~MainWindow()
@@ -186,13 +205,32 @@ void MainWindow::paintEvent(QPaintEvent *)
     painter.drawPixmap(rect(), bg);
 }
 
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    switch (event->type()) {
+        case QEvent::MouseMove:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::KeyPress:
+        case QEvent::Wheel:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+            resetInactivityTimer();
+            break;
+        default:
+            break;
+    }
+
+    return QMainWindow::eventFilter(obj, event);
+}
+
 void MainWindow::armOrResetPinTimeout()
 {
     // Start on first keypress, reset on every keypress
     if (pinTimeoutTimer->isActive()) {
         pinTimeoutTimer->stop();
     }
-        pinTimeoutTimer->start();
+    pinTimeoutTimer->start();
 }
 
 void MainWindow::restartApplication()
@@ -212,4 +250,38 @@ void MainWindow::restartApplication()
     }
 
     QCoreApplication::quit();
+}
+
+void MainWindow::resetInactivityTimer()
+{
+    if (!inactivityTimer) return;
+
+    if (inactivityTimer->isActive())
+        inactivityTimer->stop();
+
+    inactivityTimer->start();
+}
+
+void MainWindow::returnToInitialState()
+{
+    for (QWidget* w : QApplication::topLevelWidgets()) {
+        if (w && w != this) {
+            w->close();
+        }
+    }
+    if (pinTimeoutTimer) pinTimeoutTimer->stop();
+    qDebug() << "Returning to initial UI state due to inactivity";
+
+    // Clear login
+    ui->user->clear();
+    ui->password->clear();
+    ui->errorLabel->setVisible(false);
+
+    // Show login view
+    isSplashScreen = false;
+    setMainControlsVisible(true);
+    ui->user->setFocus();
+
+    // Restart the inactivity timer
+    inactivityTimer->start();
 }
