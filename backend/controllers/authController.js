@@ -37,12 +37,31 @@ async function login(req, res, next) {
             throw new AppError('Card is locked', 403);
         }
 
+        const currentAttempts = card.pin_attempts || 0;
         // Verify PIN with pepper (cardPIN already retrieved from sp_read_card_info)
         const pepperedPIN = pin + config.pinPepper;
         const isMatch = await bcrypt.compare(pepperedPIN, card.cardPIN); // Korjattu virhe
 
-        if (!isMatch) {
-            throw new AppError('Invalid credentials', 401);
+        if (!isMatch) 
+        {
+            // Increment pin attempts
+            const newAttempts = currentAttempts + 1;
+            
+            // add update pin attempts
+            await pool.execute(
+                'UPDATE cards SET pin_attempts = ? WHERE idcard = ?',
+                [newAttempts, idCard]
+            );
+
+            if (newAttempts >= 3) {
+                // Lock the card
+                await pool.execute('CALL sp_lock_card(?)', [idCard]);
+                throw new AppError('Card is locked due to multiple failed PIN attempts', 403);
+            }
+
+            throw new AppError('Invalid credentials. Attempts: ${3 - newAttempts}', 401);
+
+        
         }
 
         // Get user info including role

@@ -41,11 +41,12 @@ VALUES (
 );
 
 -- Testikäyttäjän kortti (PIN: 1234), is_locked = 0
-INSERT INTO cards (idcard, cardPIN, iduser, is_locked)
+INSERT INTO cards (idcard, cardPIN, iduser, is_locked, pin_attempts)
 VALUES (
     'CARD123456',
     '$2b$10$DMquyzBwPOXOLK.gY14gD.2/TmPGXrUagN2kbkyu81OOB/1MoCb9C',
     'TESTUSER1',
+    0,
     0
 );
 
