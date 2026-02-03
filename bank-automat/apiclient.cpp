@@ -285,6 +285,12 @@ void ApiClient::sendNoBody(const QString& method, const QString& path)
             emit allAccountsReceived(accounts);
         }
 
+        // Special-case: Get /logs/{idAccount} returns logs as an QByteArray
+        if (path.startsWith("/log/") && method == "GET") {
+            QByteArray logs = doc.toJson(QJsonDocument::Compact);
+            emit adminLogsReceived(logs);
+        }
+
         reply->deleteLater();
     });
 }
@@ -434,6 +440,11 @@ void ApiClient::updateCreditLimit(int idAccount, double creditLimit)
 void ApiClient::deleteAccount(int idAccount)
 {
     sendJson("DELETE", QString("/accounts/%1").arg(idAccount), QJsonObject{{}});
+}
+
+void ApiClient::getAdminLogs(int idAccount)
+{
+    sendNoBody("GET", QString("/log/%1").arg(idAccount));
 }
 
 // POST /atm/{idAccount}/withdraw with { amount }

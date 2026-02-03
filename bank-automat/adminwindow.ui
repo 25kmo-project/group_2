@@ -1176,7 +1176,7 @@
          </palette>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="screenTilit">
          <property name="palette">
@@ -2270,7 +2270,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Tili ID: &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
-         <widget class="QLineEdit" name="labelTiliID">
+         <widget class="QLineEdit" name="lineLokitTiliID">
           <property name="geometry">
            <rect>
             <x>590</x>
@@ -3886,7 +3886,7 @@
            <rect>
             <x>20</x>
             <y>460</y>
-            <width>60</width>
+            <width>90</width>
             <height>22</height>
            </rect>
           </property>
@@ -3894,7 +3894,7 @@
          <widget class="QLineEdit" name="lineAsiakkaatFname">
           <property name="geometry">
            <rect>
-            <x>80</x>
+            <x>110</x>
             <y>460</y>
             <width>80</width>
             <height>22</height>
@@ -3904,7 +3904,7 @@
          <widget class="QLineEdit" name="lineAsiakkaatLname">
           <property name="geometry">
            <rect>
-            <x>160</x>
+            <x>190</x>
             <y>460</y>
             <width>80</width>
             <height>22</height>
@@ -3914,9 +3914,9 @@
          <widget class="QLineEdit" name="lineAsiakkaatAddress">
           <property name="geometry">
            <rect>
-            <x>240</x>
+            <x>270</x>
             <y>460</y>
-            <width>221</width>
+            <width>191</width>
             <height>22</height>
            </rect>
           </property>

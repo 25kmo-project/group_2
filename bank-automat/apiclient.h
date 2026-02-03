@@ -105,6 +105,8 @@ public:
     void updateCreditLimit(int idAccount, double creditLimit);
     void deleteAccount(int idAccount);
 
+    void getAdminLogs(int idAccount);
+
 signals:
     // Emitted when login succeeds and all required data is parsed
     void loginSucceeded(const LoginResultDto& result);
@@ -139,6 +141,8 @@ signals:
     void accountCreditUpdated(int idAccount);
     // Emittend when account is deleted
     void accountDeleted();
+
+    void adminLogsReceived(const QByteArray& adminLogs);
 
     // Emitted whenever any API request fails
     void requestFailed(const ApiError& error);
