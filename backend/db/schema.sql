@@ -62,6 +62,7 @@ CREATE TABLE `cards` (
   `cardPIN` varchar(255) DEFAULT NULL,
   `iduser` varchar(45) NOT NULL,
   `is_locked` tinyint(1) NOT NULL DEFAULT '0',
+  `pin_attempts` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`idcard`),
   KEY `fk_card_users1_idx` (`iduser`),
   CONSTRAINT `fk_card_users1` FOREIGN KEY (`iduser`) REFERENCES `users` (`iduser`)

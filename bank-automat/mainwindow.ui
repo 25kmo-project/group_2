@@ -203,7 +203,7 @@ QPushButton#KirjauduButton:pressed {
        <item>
         <widget class="QLabel" name="userLabel">
          <property name="text">
-          <string>Käyttäjätunnus</string>
+          <string>Kortin numero</string>
          </property>
         </widget>
        </item>
@@ -223,7 +223,7 @@ QPushButton#KirjauduButton:pressed {
        <item>
         <widget class="QLabel" name="passLabel">
          <property name="text">
-          <string>Salasana</string>
+          <string>Pin numero</string>
          </property>
         </widget>
        </item>
@@ -249,7 +249,7 @@ QPushButton#KirjauduButton:pressed {
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Virheellinen käyttäjätunnus tai salasana</string>
+          <string>Virheellinen kortin numero tai pin numero</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignmentFlag::AlignCenter</set>

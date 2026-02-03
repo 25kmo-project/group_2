@@ -76,6 +76,9 @@ components:
         isLocked:
           type: boolean
           example: false
+        pin_attempts:
+          type: integer
+          example: 0
 
     Account:
       type: object
