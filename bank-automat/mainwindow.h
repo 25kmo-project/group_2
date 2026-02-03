@@ -14,6 +14,7 @@
 #include <QAction>
 #include <QProcess>
 #include <QCoreApplication>
+#include <QEvent>
 
 #include "apiclient.h"
 
@@ -36,6 +37,7 @@ class MainWindow : public QMainWindow
     ~MainWindow();
     
     protected:
+    bool eventFilter(QObject* obj, QEvent* event) override;
     // Overridden paint event to draw custom background images
     void paintEvent(QPaintEvent *event) override;
     
@@ -46,6 +48,11 @@ class MainWindow : public QMainWindow
     void on_KirjauduButton_clicked();
     
     private:
+    QTimer* inactivityTimer = nullptr;
+
+    void resetInactivityTimer();
+    void returnToInitialState();
+
     QTimer* pinTimeoutTimer = nullptr;
 
     void armOrResetPinTimeout();
