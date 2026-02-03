@@ -47,6 +47,21 @@ function mapProcedureSignalToHttp(err) {
     return null;
 }
 
+// getAllUsers
+// Hakee kaikki käyttäjät proseduurilla
+async function getAllUsers(req, res, next) {
+    try {
+        const [resultSets] = await pool.execute('CALL sp_read_all_users()');
+        const rows = resultSets?.[0] ?? [];
+
+        res.status(200).json(rows.map(mapUserRow));
+    } catch (err) {
+        const mapped = mapProcedureSignalToHttp(err);
+        if (mapped) return next(mapped);
+        next(err);
+    }
+}
+
 // getUserById
 // Tämä hakee käyttäjän proseduurilla
 async function getUserById(req, res, next) {
@@ -150,4 +165,4 @@ async function deleteUser(req, res, next) {
 }
 
 // Export
-module.exports = { getUserById, createUser, updateUser, deleteUser };
+module.exports = { getAllUsers, getUserById, createUser, updateUser, deleteUser };

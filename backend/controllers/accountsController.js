@@ -40,6 +40,21 @@ function mapProcedureSignalToHttp(err) {
     return null;
 }
 
+// getAllAccounts
+// Hakee kaikki tilit proseduurilla
+async function getAllAccounts(req, res, next) {
+    try {
+        const [resultSets] = await pool.execute('CALL sp_read_all_accounts()');
+        const rows = resultSets?.[0] ?? [];
+
+        res.status(200).json(rows.map(mapAccountRow));
+    } catch (err) {
+        const mapped = mapProcedureSignalToHttp(err);
+        if (mapped) return next(mapped);
+        next(err);
+    }
+}
+
 // getAccountById
 // Tämä hakee tilin proseduurilla
 async function getAccountById(req, res, next) {
@@ -146,6 +161,7 @@ async function deleteAccount(req, res, next) {
 
 // Export
 module.exports = {
+    getAllAccounts,
     getAccountById,
     createAccount,
     updateAccountCreditLimit,

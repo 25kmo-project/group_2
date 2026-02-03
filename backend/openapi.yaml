@@ -408,6 +408,23 @@ paths:
           description: Admin-oikeudet vaaditaan
 
   /users:
+    get:
+      tags: [Users (Admin)]
+      summary: Hae kaikki käyttäjät
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Käyttäjälista
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "403":
+          description: Admin-oikeudet vaaditaan
+
     post:
       tags: [Users (Admin)]
       summary: Luo uusi käyttäjä
@@ -566,6 +583,102 @@ paths:
         "403":
           description: Admin-oikeudet vaaditaan
 
+  /cards/{idCard}/pin:
+    put:
+      tags: [Cards (Admin)]
+      summary: Päivitä kortin PIN
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idCard
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "CARD123456"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["cardPIN"]
+              properties:
+                cardPIN:
+                  type: string
+                  example: "5678"
+      responses:
+        "200":
+          description: PIN päivitetty onnistuneesti
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Card PIN updated successfully"
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Korttia ei löydy
+
+  /accounts:
+    get:
+      tags: [Accounts (Admin)]
+      summary: Hae kaikki tilit
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Tililista
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+        "403":
+          description: Admin-oikeudet vaaditaan
+
+    post:
+      tags: [Accounts (Admin)]
+      summary: Luo uusi tili
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["idUser", "balance", "creditLimit"]
+              properties:
+                idUser:
+                  type: string
+                  example: "TESTUSER1"
+                balance:
+                  type: number
+                  format: double
+                  example: 1000.00
+                creditLimit:
+                  type: number
+                  format: double
+                  example: 500.00
+      responses:
+        "201":
+          description: Tili luotu onnistuneesti
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: Virheellinen pyyntö
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Käyttäjää ei löydy
+
   /accounts/{id}:
     get:
       tags: [Accounts (Admin)]
@@ -587,6 +700,222 @@ paths:
                 $ref: "#/components/schemas/Account"
         "403":
           description: Admin-oikeudet vaaditaan
+
+    put:
+      tags: [Accounts (Admin)]
+      summary: Päivitä tilin luottoraja
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 14
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["creditLimit"]
+              properties:
+                creditLimit:
+                  type: number
+                  format: double
+                  example: 3000.00
+      responses:
+        "200":
+          description: Luottoraja päivitetty
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Credit limit updated successfully"
+        "400":
+          description: Virheellinen pyyntö
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Tiliä ei löydy
+
+    delete:
+      tags: [Accounts (Admin)]
+      summary: Poista tili
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 14
+      responses:
+        "204":
+          description: Tili poistettu
+        "400":
+          description: Tilillä on linkitettyjä kortteja
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Tiliä ei löydy
+
+  /cardaccount/{idCard}:
+    get:
+      tags: [CardAccount (Admin)]
+      summary: Hae kortin linkitetyt tilit
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idCard
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "CARD123456"
+      responses:
+        "200":
+          description: Kortin linkitetyt tilit
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    idCard:
+                      type: string
+                      example: "CARD123456"
+                    idAccount:
+                      type: integer
+                      example: 14
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Korttia ei löydy
+
+    put:
+      tags: [CardAccount (Admin)]
+      summary: Päivitä kortin tiliyhdistelmä
+      description: Vaihda kortin vanha tili uuteen tiliin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idCard
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "CARD123456"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["IdAccount", "newIdAccount"]
+              properties:
+                IdAccount:
+                  type: integer
+                  description: Vanha tilin ID
+                  example: 1
+                newIdAccount:
+                  type: integer
+                  description: Uusi tilin ID
+                  example: 2
+      responses:
+        "200":
+          description: Kortin tiliyhdistelmä päivitetty
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Card account link updated successfully"
+        "400":
+          description: Virheellinen pyyntö
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Korttia tai tiliä ei löydy
+
+    delete:
+      tags: [CardAccount (Admin)]
+      summary: Poista kortin ja tilin linkki
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idCard
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "CARD123456"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["IdAccount"]
+              properties:
+                IdAccount:
+                  type: integer
+                  example: 1
+      responses:
+        "204":
+          description: Linkki poistettu
+        "400":
+          description: Virheellinen pyyntö
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Linkkiä ei löydy
+
+  /cardaccount:
+    post:
+      tags: [CardAccount (Admin)]
+      summary: Linkitä kortti tiliin
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["idCard", "idAccount"]
+              properties:
+                idCard:
+                  type: string
+                  example: "CARD123456"
+                idAccount:
+                  type: integer
+                  example: 1
+      responses:
+        "201":
+          description: Kortti linkitetty tiliin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Card linked to account successfully"
+        "400":
+          description: Virheellinen pyyntö tai linkki on jo olemassa
+        "403":
+          description: Admin-oikeudet vaaditaan
+        "404":
+          description: Korttia tai tiliä ei löydy
 
   /log/{idAccount}:
     get:

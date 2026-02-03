@@ -139,6 +139,20 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- READ ALL USERS
+-- example CALL sp_read_all_users();
+
+DROP PROCEDURE IF EXISTS sp_read_all_users;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_read_all_users()
+BEGIN
+  SELECT iduser, fname, lname, streetaddress, role
+  FROM users;
+END$$
+DELIMITER ;
+
 -- UPDATE USER INFO
 -- example CALL sp_update_user_info(iduser, fname, lname, streetaddress);
 
@@ -328,6 +342,20 @@ BEGIN
   SELECT idaccount, iduser, balance, creditlimit
   FROM accounts
   WHERE idaccount = p_idaccount;
+END$$
+DELIMITER ;
+
+-- READ ALL ACCOUNTS
+-- example CALL sp_read_all_accounts();
+
+DROP PROCEDURE IF EXISTS sp_read_all_accounts;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_read_all_accounts()
+BEGIN
+  SELECT idaccount, iduser, balance, creditlimit
+  FROM accounts;
 END$$
 DELIMITER ;
 

@@ -8,6 +8,7 @@ const { requireAdmin } = require('../middleware/authorize');
 
 // Controller-funktioiden tuonti
 const {
+    getAllAccounts,
     getAccountById,
     createAccount,
     updateAccountCreditLimit,
@@ -15,6 +16,7 @@ const {
 } = require('../controllers/accountsController');
 
 // Admin-reitit - vain admin voi hallita kaikkia tilejä
+router.get('/', authenticateToken, requireAdmin, getAllAccounts); // READ ALL - hakee kaikki tilit
 router.get('/:id', authenticateToken, requireAdmin, getAccountById); // READ - hakee tilin
 router.post('/', authenticateToken, requireAdmin, createAccount); // CREATE - tekee tilin
 router.put('/:id', authenticateToken, requireAdmin, updateAccountCreditLimit); // UPDATE - päivittää tilin creditlimitin tiedot
