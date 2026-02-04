@@ -109,6 +109,7 @@ public:
 
     void getAllCards();
     void getCard(QString idCard);
+    void getCardAccount(QString idCard);
 
     void getAdminLogs(int idAccount);
 
@@ -151,6 +152,8 @@ signals:
     void allCardsReceived(const QByteArray& allCards);
     // Emitted when a card is received
     void cardReceived(const QByteArray& allCards);
+    // Emitted when account(s) linked to card is received
+    void cardAccountReceived(const QByteArray& cardAccount);
 
     // Emitted when all logs are received
     void adminLogsReceived(const QByteArray& adminLogs);

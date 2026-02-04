@@ -1,14 +1,19 @@
 #include "carddata.h"
+#include "apiclient.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 
-carddata::carddata(QObject *parent) : QObject(parent){
+carddata::carddata(ApiClient *api, QObject *parent) : QObject(parent)
+    ,m_api(api)
+{
     tableModel = new QStandardItemModel(this);
     tableModel->setRowCount(0);
-    tableModel->setColumnCount(4);
-    tableModel->setHorizontalHeaderLabels({"KortinID", "KayttäjäID", "Lukossa", "PIN yrityksiä"});
+    tableModel->setColumnCount(5);
+    tableModel->setHorizontalHeaderLabels({"KortinID", "KayttäjäID", "Tilit", "Lukossa", "PIN yrityksiä"});
+
+    connect(m_api, &ApiClient::cardAccountReceived, this, &carddata::linkCardAccount);
 }
 
 void carddata::setCardData(const QByteArray &newCardData)
@@ -20,14 +25,60 @@ void carddata::setCardData(const QByteArray &newCardData)
     if (json_doc.isArray()) {
         QJsonArray json_array = json_doc.array();
         for (const QJsonValue &value : json_array) {
-            cardDataList.append(card::mapJson(value.toObject()));
+            card c = card::mapJson(value.toObject());
+            cardDataList.append(c);
+            m_api->getCardAccount(c.idCard);
         }
+
     }
     else if (json_doc.isObject()) {
-        cardDataList.append(card::mapJson(json_doc.object()));
+        card cardObj = card::mapJson(json_doc.object());
+        cardDataList.append(cardObj);
+        m_api->getCardAccount(cardObj.idCard);
     }
 
     tableModel->setRowCount(0);
+
+    updateModel();
+}
+
+void carddata::linkCardAccount(const QByteArray linkData)
+{
+    //qDebug() << "Step 1: Link data received: " << linkData;
+    //Receive linkdata
+    QJsonDocument doc = QJsonDocument::fromJson(linkData);
+    //Check if single account or multiple and standardizes format
+    QJsonArray array;
+    if (doc.isObject()) {
+        QJsonObject root = doc.object();
+        if (root.contains("data") && root.value("data").isArray()) {
+            array = root.value("data").toArray();
+        }
+        else {
+            array.append(root);
+        }
+    }
+    else if (doc.isArray()) {
+        array = doc.array();
+    }
+    else {
+        array.append(doc.object());
+    }
+    for (const QJsonValue &value : array) {
+        QJsonObject obj = value.toObject();
+        QString linkIdCard = obj.value("idCard").toString();
+        int linkIdAccount = obj.value("idAccount").toInt();
+        //qDebug() << "Step 2: Looking for Card ID" << linkIdCard;
+        for (card &c : cardDataList) {
+            if (c.idCard == linkIdCard) {
+                //qDebug() << "Step 3: Found Match! Adding Account" << linkIdAccount;
+                //Just in case does not accept duplicates
+                if (!c.linkedCardAccount.contains(linkIdAccount)) {
+                    c.linkedCardAccount.append(linkIdAccount);
+                }
+            }
+        }
+    }
 
     updateModel();
 }
@@ -45,14 +96,26 @@ void carddata::updateModel()
         QStandardItem *idUserItem = new QStandardItem(card.idUser);
         idUserItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
         tableModel->setItem(row, 1 , idUserItem);
+        QString accounts;
+        for (int idAccount : card.linkedCardAccount) {
+            accounts += QString::number(idAccount) + "  ";
+        }
+        if (accounts.isEmpty()) {
+            accounts = "-";
+        }
+        QStandardItem *accountsItem = new QStandardItem(accounts);
+        accountsItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+        tableModel->setItem(row, 2, accountsItem);
         QString islockedString = card.isLocked ? "True" : "False";
         QStandardItem *lockedItem = new QStandardItem(islockedString);
         lockedItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-        tableModel->setItem(row, 2, lockedItem);
-        QStandardItem *pinItem = new QStandardItem(QString::number(card.pinAttempst));
+        tableModel->setItem(row, 3, lockedItem);
+        QStandardItem *pinItem = new QStandardItem(QString::number(card.pinAttempts));
         pinItem->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-        tableModel->setItem(row, 3, pinItem);
+        tableModel->setItem(row, 4, pinItem);
     }
 }
+
+
 
 

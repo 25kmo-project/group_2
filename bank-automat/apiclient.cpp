@@ -302,6 +302,11 @@ void ApiClient::sendNoBody(const QString& method, const QString& path)
             emit allCardsReceived(cards);
         }
 
+        if (path.startsWith("/cardaccount/") && method == "GET") {
+            QByteArray cardAccount = doc.toJson(QJsonDocument::Compact);
+            emit cardAccountReceived(cardAccount);
+        }
+
         reply->deleteLater();
     });
 }
@@ -461,6 +466,11 @@ void ApiClient::getAllCards()
 void ApiClient::getCard(QString idCard)
 {
     sendNoBody("GET", QString("/cards/%1").arg(idCard));
+}
+
+void ApiClient::getCardAccount(QString idCard)
+{
+    sendNoBody("GET", QString("/cardaccount/%1").arg(idCard));
 }
 
 void ApiClient::getAdminLogs(int idAccount)

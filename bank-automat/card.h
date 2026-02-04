@@ -10,8 +10,9 @@ public:
     card();
     QString idCard;
     QString idUser;
+    QList<int> linkedCardAccount;
     int isLocked;
-    int pinAttempst;
+    int pinAttempts;
 
     static card mapJson(const QJsonObject &json);
 };

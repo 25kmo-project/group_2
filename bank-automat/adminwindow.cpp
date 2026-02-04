@@ -29,7 +29,7 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
     ui->tableAccountsData->setModel(accountsData->getModel());
     accountsData->setAccountsData(testAccountsData);
 
-    cardData = new carddata(this);
+    cardData = new carddata(m_api,this);
     ui->tableCardData->setModel(cardData->getModel());
     cardData->setCardData(testCardData);
 
@@ -59,12 +59,15 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
     ui->tableAccountsData->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     ui->tableAccountsData->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
 
+    ui->tableCardData->verticalHeader()->setVisible(false);
     ui->tableCardData->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableCardData->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->tableCardData->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
-    ui->tableCardData->setColumnWidth(2, 80);
+    ui->tableCardData->setColumnWidth(2, 75);
     ui->tableCardData->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Fixed);
-    ui->tableCardData->setColumnWidth(3, 80);
+    ui->tableCardData->setColumnWidth(3, 50);
+    ui->tableCardData->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
+    ui->tableCardData->setColumnWidth(4, 75);
 
     //IdAccount only accept integers
     ui->lineLokitTiliID->setValidator(new QIntValidator(0, 9999999, this));
