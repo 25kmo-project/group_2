@@ -195,17 +195,15 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             emit accountDeleted();
         }
 
-        qDebug() << "--- Network Response Debug ---";
-        qDebug() << "Path:" << path;
-        qDebug() << "Method:" << method;
-        qDebug() << "Doc is empty?" << doc.isEmpty();
-        qDebug() << "------------------------------";
-
         if (path.startsWith("/cards") && method == "POST") {
             QByteArray responseData = doc.toJson(QJsonDocument::Compact);
 
             qDebug() << "Server returned:" << responseData;
             emit cardCreated(responseData);
+        }
+
+        if (path.startsWith("/cards") && method == "DELETE") {
+            emit cardDeleted();
         }
 
         reply->deleteLater();
@@ -474,7 +472,11 @@ void ApiClient::deleteAccount(int idAccount)
 void ApiClient::addCard(QString idCard, QString idUser, QString cardPIN)
 {
     sendJson("POST", QString("/cards"), QJsonObject{{"idCard", idCard},{"idUser", idUser},{"cardPIN", cardPIN}});
-    qDebug() << "Client Reached";
+}
+
+void ApiClient::deleteCard(QString idCard)
+{
+    sendJson("DELETE", QString("/cards/%1").arg(idCard), QJsonObject{{}});
 }
 
 void ApiClient::getAllCards()

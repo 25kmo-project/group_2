@@ -196,7 +196,11 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
         ui->lineKortitPinYritykset->clear();
         ui->lineKortitIdUser->clear();
         ui->lineKortitPIN->clear();
-        qDebug() << "Signal received";
+    });
+
+    connect(m_api, &ApiClient::cardDeleted, this, [this] {
+        m_api->getAllCards();
+        ui->lineKortitIdCard->clear();
     });
 
     connect(m_api, &ApiClient::adminLogsReceived, this, [this](QByteArray adminLogs) {
@@ -418,6 +422,15 @@ void adminwindow::on_btnKorttiHaeKortti_clicked()
     QString idCard = ui->lineKortitIdCard->text().trimmed();
     if (!idCard.isEmpty()) {
         m_api->getCard(idCard);
+    }
+}
+
+
+void adminwindow::on_btnKorttiPoista_clicked()
+{
+    QString idCard = ui->lineKortitIdCard->text().trimmed();
+    if (!idCard.isEmpty()) {
+        m_api->deleteCard(idCard);
     }
 }
 

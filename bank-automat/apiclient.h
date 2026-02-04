@@ -109,6 +109,7 @@ public:
     void getCard(QString idCard);
     void getCardAccount(QString idCard);
     void addCard(QString idCard, QString idUser, QString cardPIN);
+    void deleteCard(QString idCard);
 
     void getAdminLogs(int idAccount);
 
@@ -155,6 +156,8 @@ signals:
     void cardAccountReceived(const QByteArray& cardAccount);
     // Emitted when account is created
     void cardCreated(const QByteArray& cardData);
+    // Emitted when account is deleted
+    void cardDeleted();
 
 
     // Emitted when all logs are received
