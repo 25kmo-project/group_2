@@ -80,28 +80,21 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
         userData->setUserData(userInfo);
         userData->updateModel();
         //clears inputs
-        ui->lineAsiakkaatID->clear();
-        ui->lineAsiakkaatFname->clear();
-        ui->lineAsiakkaatLname->clear();
-        ui->lineAsiakkaatAddress->clear();
-        ui->lineAsiakkaatRole->clear();
+        this->clearAsiakkaatInputs();
     });
 
     connect(m_api, &ApiClient::allUsersReceived, this, [this](QByteArray allUsersInfo) {
         userData->setUserData(allUsersInfo);
         userData->updateModel();
         //clears inputs
-        ui->lineAsiakkaatID->clear();
-        ui->lineAsiakkaatFname->clear();
-        ui->lineAsiakkaatLname->clear();
-        ui->lineAsiakkaatAddress->clear();
-        ui->lineAsiakkaatRole->clear();
+        this->clearAsiakkaatInputs();
     });
 
     connect(m_api, &ApiClient::userCreated, this, [this](QString id) {
         //Just in case something goes wrong it doesnt crash with empty id
         if (!id.isEmpty()) {
             m_api->getUser(id);
+            this->clearAsiakkaatInputs();
         }
     });
 
@@ -110,11 +103,7 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
         if (!id.isEmpty()) {
             m_api->getUser(id);
             //clears inputs
-            ui->lineAsiakkaatID->clear();
-            ui->lineAsiakkaatFname->clear();
-            ui->lineAsiakkaatLname->clear();
-            ui->lineAsiakkaatAddress->clear();
-            ui->lineAsiakkaatRole->clear();
+            this->clearAsiakkaatInputs();
         }
     });
 
@@ -122,91 +111,80 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
         ui->lineAsiakkaatID->clear();
         //Clears the table after deleting
         userData->setUserData(QByteArray());
+        this->clearAsiakkaatInputs();
     });
 
     connect(m_api, &ApiClient::accountReceived, this, [this](QByteArray accountInfo) {
         accountsData->setAccountsData(accountInfo);
         accountsData->updateModel();
         //clears inputs
-        ui->lineTilitIdaccount->clear();
-        ui->lineTilitIduser->clear();
-        ui->lineTilitBalance->clear();
-        ui->lineTilitCreditlimit->clear();
+        this->clearTilitInputs();
     });
 
     connect(m_api, &ApiClient::allAccountsReceived, this, [this](QByteArray allAccountsInfo) {
         accountsData->setAccountsData(allAccountsInfo);
         accountsData->updateModel();
         //clears inputs
-        ui->lineTilitIdaccount->clear();
-        ui->lineTilitIduser->clear();
-        ui->lineTilitBalance->clear();
-        ui->lineTilitCreditlimit->clear();
+        this->clearTilitInputs();
     });
 
     connect(m_api, &ApiClient::accountCreated, this, [this](QByteArray accountInfo) {
         accountsData->setAccountsData(accountInfo);
         accountsData->updateModel();
         //clears inputs
-        ui->lineTilitIdaccount->clear();
-        ui->lineTilitIduser->clear();
-        ui->lineTilitBalance->clear();
-        ui->lineTilitCreditlimit->clear();
+        this->clearTilitInputs();
     });
 
     connect(m_api, &ApiClient::accountCreditUpdated, this, [this](int idAccount) {
         m_api->getAccount(idAccount);
         //clears inputs
-        ui->lineTilitIdaccount->clear();
-        ui->lineTilitIduser->clear();
-        ui->lineTilitBalance->clear();
-        ui->lineTilitCreditlimit->clear();
+        this->clearTilitInputs();
     });
 
     connect(m_api, &ApiClient::accountDeleted, this, [this] {
         //Clears the table after deleting
         accountsData->setAccountsData(QByteArray());
         //clears inputs
-        ui->lineTilitIdaccount->clear();
-        ui->lineTilitIduser->clear();
-        ui->lineTilitBalance->clear();
-        ui->lineTilitCreditlimit->clear();
+        this->clearTilitInputs();
     });
 
     connect(m_api, &ApiClient::allCardsReceived, this, [this](QByteArray allCards) {
         cardData->setCardData(allCards);
-        ui->lineKortitIdCard->clear();
-        ui->lineKortitLukossa->clear();
-        ui->lineKortitPinYritykset->clear();
-        ui->lineKortitIdUser->clear();
+        this->clearKortitInputs();
     });
 
     connect(m_api, &ApiClient::cardReceived, this, [this](QByteArray card) {
         cardData->setCardData(card);
-        ui->lineKortitIdCard->clear();
-        ui->lineKortitLukossa->clear();
-        ui->lineKortitPinYritykset->clear();
-        ui->lineKortitIdUser->clear();
+        this->clearKortitInputs();
     });
 
     connect(m_api, &ApiClient::cardCreated, this, [this](QByteArray card) {
         cardData->setCardData(card);
-        ui->lineKortitIdCard->clear();
-        ui->lineKortitLukossa->clear();
-        ui->lineKortitPinYritykset->clear();
-        ui->lineKortitIdUser->clear();
-        ui->lineKortitPIN->clear();
+        // waitingAccountID > 0 only if something actually saved. Initialized to 0 and reset after succesful operation
+        if (this->waitingAccountId > 0) {
+            QJsonDocument doc = QJsonDocument::fromJson(card);
+            QString idCard = doc.object().value("idCard").toString();
+            m_api->linkCard(idCard, this->waitingAccountId);
+            this->waitingAccountId = 0;
+        }
+        this->clearKortitInputs();
     });
 
     connect(m_api, &ApiClient::cardDeleted, this, [this] {
         m_api->getAllCards();
-        ui->lineKortitIdCard->clear();
+        this->clearKortitInputs();
     });
 
     connect(m_api, &ApiClient::PINUpdated, this, [this](QString idCard) {
         m_api->getCard(idCard);
-        ui->lineKortitIdCard->clear();
-        ui->lineKortitPIN->clear();
+        this->clearKortitInputs();
+    });
+
+    connect(m_api, &ApiClient::cardAccountLinked, this, [this](QByteArray cardAccount) {
+        QJsonDocument doc = QJsonDocument::fromJson(cardAccount);
+        QString idCard = doc.object().value("idCard").toString();
+        m_api->getCard(idCard);
+        this->clearKortitInputs();
     });
 
     connect(m_api, &ApiClient::adminLogsReceived, this, [this](QByteArray adminLogs) {
@@ -220,6 +198,34 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
 adminwindow::~adminwindow()
 {
     delete ui;
+}
+
+void adminwindow::clearAsiakkaatInputs()
+{
+    ui->lineAsiakkaatID->clear();
+    ui->lineAsiakkaatFname->clear();
+    ui->lineAsiakkaatLname->clear();
+    ui->lineAsiakkaatAddress->clear();
+    ui->lineAsiakkaatRole->clear();
+
+}
+
+void adminwindow::clearTilitInputs()
+{
+    ui->lineTilitIdaccount->clear();
+    ui->lineTilitIduser->clear();
+    ui->lineTilitBalance->clear();
+    ui->lineTilitCreditlimit->clear();
+}
+
+void adminwindow::clearKortitInputs()
+{
+    ui->lineKortitIdCard->clear();
+    ui->lineKortitLukossa->clear();
+    ui->lineKortitPinYritykset->clear();
+    ui->lineKortitIdUser->clear();
+    ui->lineKortitPIN->clear();
+    ui->lineKortitTilit->clear();
 }
 
 //adminruudun tausta, jälleen sama
@@ -273,12 +279,6 @@ void adminwindow::on_btnKayttajaLuoUusi_clicked()
     QString role = ui->lineAsiakkaatRole->text().trimmed();
     if (!idUser.isEmpty()) {
         m_api->addUser(idUser, fname, lname, address, role);
-
-        ui->lineAsiakkaatID->clear();
-        ui->lineAsiakkaatFname->clear();
-        ui->lineAsiakkaatLname->clear();
-        ui->lineAsiakkaatAddress->clear();
-        ui->lineAsiakkaatRole->clear();
     }
 }
 
@@ -411,7 +411,11 @@ void adminwindow::on_btnKorttiLuoUusi_clicked()
     QString idCard = ui->lineKortitIdCard->text().trimmed();
     QString idUser = ui->lineKortitIdUser->text().trimmed();
     QString PIN = ui->lineKortitPIN->text().trimmed();
-    if (!idCard.isEmpty() && !idUser.isEmpty() && !PIN.isEmpty()) {
+    QString idAccount = ui->lineKortitTilit->text().trimmed();
+    bool ok;
+    int intIdAccount = idAccount.toInt(&ok);
+    if (!idCard.isEmpty() && !idUser.isEmpty() && !PIN.isEmpty() && ok) {
+        this->waitingAccountId = intIdAccount;
         m_api->addCard(idCard, idUser, PIN);
     }
 }

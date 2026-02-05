@@ -195,17 +195,24 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             emit accountDeleted();
         }
 
+        // Special case for linking account to card
+        if (path.startsWith("/cardaccount") && method == "POST") {
+            QByteArray responseData = doc.toJson(QJsonDocument::Compact);
+            emit cardAccountLinked(responseData);
+        }
+
+        // Special case for creating card
         if (path.startsWith("/cards") && method == "POST") {
             QByteArray responseData = doc.toJson(QJsonDocument::Compact);
-
-            qDebug() << "Server returned:" << responseData;
             emit cardCreated(responseData);
         }
 
+        // Special case for deleting card
         if (path.startsWith("/cards") && method == "DELETE") {
             emit cardDeleted();
         }
 
+        // Special cas for updating PIN
         if (path.startsWith("/cards/") && path.endsWith("/pin") && method == "PUT") {
             QString idFromPath = path.section('/',2,2);
             emit PINUpdated(idFromPath);
@@ -488,6 +495,11 @@ void ApiClient::deleteCard(QString idCard)
 void ApiClient::updatePIN(QString idCard, QString PIN)
 {
     sendJson("PUT", QString("/cards/%1/pin").arg(idCard), QJsonObject{{"cardPIN",PIN}});
+}
+
+void ApiClient::linkCard(QString idCard, int idAccount)
+{
+    sendJson("POST", QString("/cardaccount"), QJsonObject{{"idCard", idCard},{"idAccount", idAccount}});
 }
 
 void ApiClient::getAllCards()

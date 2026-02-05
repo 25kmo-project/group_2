@@ -22,6 +22,7 @@ private:
     //QString user;
     ApiClient* m_api = nullptr;
     QString m_idUser;
+    int waitingAccountId = 0;
 
     class userdata *userData;
     class accountsdata *accountsData;
@@ -32,6 +33,10 @@ private:
     QByteArray testAccountsData;
     QByteArray testCardData;
     QByteArray testLogData;
+
+    void clearAsiakkaatInputs();
+    void clearTilitInputs();
+    void clearKortitInputs();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
