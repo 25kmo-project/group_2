@@ -213,9 +213,7 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
         // Special case for updating link between card and account
         if (path.startsWith("/cardaccount") && method == "PUT") {
             QString idFromPath = path.section('/',2,2);
-            qDebug() << "EMITTING cardLinkUpdated WITH ID:" << idFromPath;
             emit cardLinkUpdated(idFromPath);
-            qDebug() << "sendJson reached";
         }
 
         // Special case for deleting a link between account and card
