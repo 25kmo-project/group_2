@@ -1176,7 +1176,7 @@
          </palette>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="screenTilit">
          <property name="palette">
@@ -2765,9 +2765,9 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>90</y>
+            <y>80</y>
             <width>121</width>
-            <height>51</height>
+            <height>41</height>
            </rect>
           </property>
           <property name="text">
@@ -2778,9 +2778,9 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>200</y>
+            <y>180</y>
             <width>121</width>
-            <height>51</height>
+            <height>41</height>
            </rect>
           </property>
           <property name="text">
@@ -2791,9 +2791,9 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>270</y>
+            <y>240</y>
             <width>51</width>
-            <height>51</height>
+            <height>41</height>
            </rect>
           </property>
           <property name="text">
@@ -2804,9 +2804,9 @@
           <property name="geometry">
            <rect>
             <x>610</x>
-            <y>270</y>
+            <y>240</y>
             <width>51</width>
-            <height>51</height>
+            <height>41</height>
            </rect>
           </property>
           <property name="text">
@@ -2830,9 +2830,9 @@
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>340</y>
+            <y>300</y>
             <width>51</width>
-            <height>51</height>
+            <height>41</height>
            </rect>
           </property>
           <property name="text">
@@ -2844,9 +2844,9 @@ linkitys</string>
           <property name="geometry">
            <rect>
             <x>610</x>
-            <y>340</y>
+            <y>300</y>
             <width>51</width>
-            <height>51</height>
+            <height>41</height>
            </rect>
           </property>
           <property name="text">
@@ -2900,7 +2900,7 @@ linkitys</string>
             <x>540</x>
             <y>20</y>
             <width>51</width>
-            <height>51</height>
+            <height>41</height>
            </rect>
           </property>
           <property name="text">
@@ -2914,7 +2914,7 @@ kaikki</string>
             <x>610</x>
             <y>20</y>
             <width>51</width>
-            <height>51</height>
+            <height>41</height>
            </rect>
           </property>
           <property name="text">
@@ -2936,7 +2936,7 @@ kortti</string>
           <property name="geometry">
            <rect>
             <x>580</x>
-            <y>160</y>
+            <y>140</y>
             <width>81</width>
             <height>22</height>
            </rect>
@@ -2946,7 +2946,7 @@ kortti</string>
           <property name="geometry">
            <rect>
             <x>540</x>
-            <y>160</y>
+            <y>140</y>
             <width>31</width>
             <height>21</height>
            </rect>
@@ -2959,6 +2959,19 @@ kortti</string>
           </property>
           <property name="text">
            <string>PIN: </string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelKortitError">
+          <property name="geometry">
+           <rect>
+            <x>540</x>
+            <y>360</y>
+            <width>121</width>
+            <height>61</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
           </property>
          </widget>
         </widget>

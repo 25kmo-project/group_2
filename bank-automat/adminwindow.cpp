@@ -187,6 +187,16 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
         this->clearKortitInputs();
     });
 
+    connect(m_api, &ApiClient::cardLocked, this, [this](QString idCard) {
+        m_api->getCard(idCard);
+        this->clearKortitInputs();
+    });
+
+    connect(m_api, &ApiClient::cardUnlocked, this, [this](QString idCard) {
+        m_api->getCard(idCard);
+        this->clearKortitInputs();
+    });
+
     connect(m_api, &ApiClient::adminLogsReceived, this, [this](QByteArray adminLogs) {
         logData->setLog(adminLogs);
         //clears input
@@ -417,6 +427,10 @@ void adminwindow::on_btnKorttiLuoUusi_clicked()
     if (!idCard.isEmpty() && !idUser.isEmpty() && !PIN.isEmpty() && ok) {
         this->waitingAccountId = intIdAccount;
         m_api->addCard(idCard, idUser, PIN);
+        ui->labelKortitError->setText("");
+    }
+    else {
+        ui->labelKortitError->setText("idCard, idUser,\nidAccount tai PIN\npuuttuu");
     }
 }
 
@@ -451,6 +465,30 @@ void adminwindow::on_btnKorttiPaivitaPIN_clicked()
     QString PIN = ui->lineKortitPIN->text().trimmed();
     if (!idCard.isEmpty() && !PIN.isEmpty()) {
         m_api->updatePIN(idCard, PIN);
+        ui->labelKortitError->setText("");
+    }
+    else {
+        ui->labelKortitError->setText("idCard tai PIN\npuuttuu");
+    }
+}
+
+
+void adminwindow::on_btnKorttiLukitse_clicked()
+{
+    QString idCard = ui->lineKortitIdCard->text().trimmed();
+    if (!idCard.isEmpty()) {
+        m_api->lockCard(idCard);
+        qDebug() << "locked clicked";
+    }
+}
+
+
+void adminwindow::on_btnKorttiAvaa_clicked()
+{
+    QString idCard = ui->lineKortitIdCard->text().trimmed();
+    if (!idCard.isEmpty()) {
+        m_api->unlockCard(idCard);
+        qDebug() << "unlocked clicked";
     }
 }
 

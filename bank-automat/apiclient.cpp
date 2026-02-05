@@ -201,6 +201,16 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             emit cardAccountLinked(responseData);
         }
 
+        if (path.startsWith("/cards/") && path.endsWith("/lock") && method == "POST") {
+            QString idFromPath = path.section('/',2,2);
+            emit cardLocked(idFromPath);
+        }
+
+        if (path.startsWith("/cards/") && path.endsWith("/unlock") && method == "POST") {
+            QString idFromPath = path.section('/',2,2);
+            emit cardUnlocked(idFromPath);
+        }
+
         // Special case for creating card
         if (path.startsWith("/cards") && method == "POST") {
             QByteArray responseData = doc.toJson(QJsonDocument::Compact);
@@ -500,6 +510,16 @@ void ApiClient::updatePIN(QString idCard, QString PIN)
 void ApiClient::linkCard(QString idCard, int idAccount)
 {
     sendJson("POST", QString("/cardaccount"), QJsonObject{{"idCard", idCard},{"idAccount", idAccount}});
+}
+
+void ApiClient::lockCard(QString idCard)
+{
+    sendJson("POST", QString("/cards/%1/lock").arg(idCard), QJsonObject{{"idCard", idCard}});
+}
+
+void ApiClient::unlockCard(QString idCard)
+{
+    sendJson("POST", QString("/cards/%1/unlock").arg(idCard), QJsonObject{{"idCard", idCard}});
 }
 
 void ApiClient::getAllCards()
