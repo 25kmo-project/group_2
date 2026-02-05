@@ -112,6 +112,8 @@ public:
     void deleteCard(QString idCard);
     void updatePIN(QString idCard, QString PIN);
     void linkCard(QString idCard, int idAccount);
+    void updateLink(QString idCard, int idAccount, int newIdAccount);
+    void deleteLink(QString idCard, int idAccount);
     void lockCard(QString idCard);
     void unlockCard(QString idCard);
 
@@ -170,6 +172,10 @@ signals:
     void cardLocked(QString cardLocked);
     // Emitted when card is unlocked
     void cardUnlocked(QString cardUnlocked);
+    // Emitted when account linked to card is updated
+    void cardLinkUpdated(QString idCard);
+    // Emitted when card-account link is deleted
+    void cardLinkDeleted(QString idCard);
 
     // Emitted when all logs are received
     void adminLogsReceived(const QByteArray& adminLogs);

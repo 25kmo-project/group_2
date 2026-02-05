@@ -197,12 +197,28 @@ adminwindow::adminwindow(QString idUser, ApiClient *api, QWidget *parent)
         this->clearKortitInputs();
     });
 
+    connect(m_api, &ApiClient::cardLinkDeleted, this, [this](QString idCard) {
+        m_api->getCard(idCard);
+        this->clearKortitInputs();
+    });
+
+    connect(m_api, &ApiClient::cardLinkUpdated, this, [this](QString idCard) {
+        m_api->getCard(idCard);
+        this->clearKortitInputs();
+    });
+
     connect(m_api, &ApiClient::adminLogsReceived, this, [this](QByteArray adminLogs) {
         logData->setLog(adminLogs);
         //clears input
         ui->lineLokitTiliID->clear();
     });
 
+    // Shows card type error from backend
+    connect(m_api, &ApiClient::requestFailed, this, [this](ApiError error) {
+        if (error.message == "Cannot change card between credit and debit accounts") {
+            ui->labelKortitError->setText("Cannot change card\nbetween credit and\ndebit accounts");
+        }
+    });
 }
 
 adminwindow::~adminwindow()
@@ -236,6 +252,8 @@ void adminwindow::clearKortitInputs()
     ui->lineKortitIdUser->clear();
     ui->lineKortitPIN->clear();
     ui->lineKortitTilit->clear();
+    ui->lineKortitUusiIdAccount->clear();
+    ui->labelKortitError->setText("");
 }
 
 //adminruudun tausta, jälleen sama
@@ -262,6 +280,7 @@ void adminwindow::on_btnKortitLowBar_clicked()
 {
     ui->stackedAdmin->setCurrentWidget(ui->screenKortit);
     m_api->getAllCards();
+    this->clearKortitInputs();
 }
 
 void adminwindow::on_btnLokitLowBar_clicked()
@@ -427,7 +446,7 @@ void adminwindow::on_btnKorttiLuoUusi_clicked()
     if (!idCard.isEmpty() && !idUser.isEmpty() && !PIN.isEmpty() && ok) {
         this->waitingAccountId = intIdAccount;
         m_api->addCard(idCard, idUser, PIN);
-        ui->labelKortitError->setText("");
+        this->clearKortitInputs();
     }
     else {
         ui->labelKortitError->setText("idCard, idUser,\nidAccount tai PIN\npuuttuu");
@@ -438,6 +457,7 @@ void adminwindow::on_btnKorttiLuoUusi_clicked()
 void adminwindow::on_btnKorttiHaeKaikki_clicked()
 {
     m_api->getAllCards();
+    this->clearKortitInputs();
 }
 
 
@@ -446,6 +466,7 @@ void adminwindow::on_btnKorttiHaeKortti_clicked()
     QString idCard = ui->lineKortitIdCard->text().trimmed();
     if (!idCard.isEmpty()) {
         m_api->getCard(idCard);
+        this->clearKortitInputs();
     }
 }
 
@@ -455,6 +476,7 @@ void adminwindow::on_btnKorttiPoista_clicked()
     QString idCard = ui->lineKortitIdCard->text().trimmed();
     if (!idCard.isEmpty()) {
         m_api->deleteCard(idCard);
+        this->clearKortitInputs();
     }
 }
 
@@ -465,7 +487,7 @@ void adminwindow::on_btnKorttiPaivitaPIN_clicked()
     QString PIN = ui->lineKortitPIN->text().trimmed();
     if (!idCard.isEmpty() && !PIN.isEmpty()) {
         m_api->updatePIN(idCard, PIN);
-        ui->labelKortitError->setText("");
+        this->clearKortitInputs();
     }
     else {
         ui->labelKortitError->setText("idCard tai PIN\npuuttuu");
@@ -478,7 +500,7 @@ void adminwindow::on_btnKorttiLukitse_clicked()
     QString idCard = ui->lineKortitIdCard->text().trimmed();
     if (!idCard.isEmpty()) {
         m_api->lockCard(idCard);
-        qDebug() << "locked clicked";
+        this->clearKortitInputs();
     }
 }
 
@@ -488,7 +510,55 @@ void adminwindow::on_btnKorttiAvaa_clicked()
     QString idCard = ui->lineKortitIdCard->text().trimmed();
     if (!idCard.isEmpty()) {
         m_api->unlockCard(idCard);
-        qDebug() << "unlocked clicked";
+        this->clearKortitInputs();
     }
+}
+
+
+void adminwindow::on_btnKorttiLinkita_clicked()
+{
+    QString idCard = ui->lineKortitIdCard->text().trimmed();
+    QString idAccount = ui->lineKortitTilit->text().trimmed();
+    bool ok;
+    int intIdAccount = idAccount.toInt(&ok);
+    if (!idCard.isEmpty() && !idAccount.isEmpty() && ok) {
+        m_api->linkCard(idCard, intIdAccount);
+        this->clearKortitInputs();
+    }
+}
+
+
+void adminwindow::on_btnKorttiPoistaLinkitys_clicked()
+{
+    QString idCard = ui->lineKortitIdCard->text().trimmed();
+    QString idAccount = ui->lineKortitTilit->text().trimmed();
+    bool ok;
+    int intIdAccount = idAccount.toInt(&ok);
+    if (!idCard.isEmpty() && !idAccount.isEmpty() && ok) {
+        m_api->deleteLink(idCard, intIdAccount);
+        this->clearKortitInputs();
+    }
+}
+
+
+void adminwindow::on_btnKorttiPaivitaLinkitys_clicked()
+{
+    QString idCard = ui->lineKortitIdCard->text().trimmed();
+    QString idAccount = ui->lineKortitTilit->text().trimmed();
+    QString newIdAccount = ui->lineKortitUusiIdAccount->text().trimmed();
+    bool ok1;
+    bool ok2;
+    int intIdAccount = idAccount.toInt(&ok1);
+    int intNewIdAccount = newIdAccount.toInt(&ok2);
+    if (idCard.isEmpty() || idAccount.isEmpty() || newIdAccount.isEmpty()) {
+        ui->labelKortitError->setText("idCard, idAccount\ntai uusiIdAccount\npuuttuu");
+        return;
+    }
+    if (!ok1 || !ok2) {
+        ui->labelKortitError->setText("idAccount ja\nuusiIdAccount\ei kelpaa");
+        return;
+    }
+    m_api->updateLink(idCard, intIdAccount, intNewIdAccount);
+    ui->labelKortitError->setText("");
 }
 

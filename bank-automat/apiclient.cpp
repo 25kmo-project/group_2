@@ -72,6 +72,11 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
 
     // Handle response asynchronously
     connect(reply, &QNetworkReply::finished, this, [this, reply, path, body, method]() {
+
+        //DELETOI nämä 2 myöhemmin
+        qDebug() << "--- REAL-TIME DEBUG ---";
+        qDebug() << "Actual Path:" << path << " | Status:" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
         ApiError err;
         QJsonDocument doc = readJson(reply, err);
 
@@ -92,6 +97,10 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
 
             // Fallback to Qt's error string
             if (err.message.isEmpty()) err.message = reply->errorString();
+
+            //DELETOI nämä 2 myöhemmin
+            qDebug() << "Server Error Message:" << doc.object().value("message").toString();
+            qDebug() << "Full Error Body:" << doc.toJson();
 
             emit requestFailed(err);
             reply->deleteLater();
@@ -201,11 +210,27 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             emit cardAccountLinked(responseData);
         }
 
+        // Special case for updating link between card and account
+        if (path.startsWith("/cardaccount") && method == "PUT") {
+            QString idFromPath = path.section('/',2,2);
+            qDebug() << "EMITTING cardLinkUpdated WITH ID:" << idFromPath;
+            emit cardLinkUpdated(idFromPath);
+            qDebug() << "sendJson reached";
+        }
+
+        // Special case for deleting a link between account and card
+        if (path.startsWith("/cardaccount") && method == "DELETE") {
+            QString idFromPath = path.section('/',2,2);
+            emit cardLinkDeleted(idFromPath);
+        }
+
+        // Special case for locking card
         if (path.startsWith("/cards/") && path.endsWith("/lock") && method == "POST") {
             QString idFromPath = path.section('/',2,2);
             emit cardLocked(idFromPath);
         }
 
+        // Special case for unlocking card
         if (path.startsWith("/cards/") && path.endsWith("/unlock") && method == "POST") {
             QString idFromPath = path.section('/',2,2);
             emit cardUnlocked(idFromPath);
@@ -222,7 +247,7 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             emit cardDeleted();
         }
 
-        // Special cas for updating PIN
+        // Special case for updating PIN
         if (path.startsWith("/cards/") && path.endsWith("/pin") && method == "PUT") {
             QString idFromPath = path.section('/',2,2);
             emit PINUpdated(idFromPath);
@@ -510,6 +535,16 @@ void ApiClient::updatePIN(QString idCard, QString PIN)
 void ApiClient::linkCard(QString idCard, int idAccount)
 {
     sendJson("POST", QString("/cardaccount"), QJsonObject{{"idCard", idCard},{"idAccount", idAccount}});
+}
+
+void ApiClient::updateLink(QString idCard, int idAccount, int newIdAccount)
+{
+    sendJson("PUT", QString("/cardaccount/%1").arg(idCard), QJsonObject{{"idAccount", idAccount},{"newIdAccount", newIdAccount}});
+}
+
+void ApiClient::deleteLink(QString idCard, int idAccount)
+{
+    sendJson("DELETE", QString("/cardaccount/%1").arg(idCard), QJsonObject{{"idAccount", idAccount}});
 }
 
 void ApiClient::lockCard(QString idCard)
