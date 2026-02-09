@@ -83,6 +83,10 @@ jobs:
       - name: Run tests (headless via Xvfb)
         run: xvfb-run --auto-servernum ctest --test-dir build --output-on-failure
 
+      - name: Create .env file for deployment
+        run: |
+          echo "DB_IP=${{ secrets.DB_IP }}" > build/.env
+
       # Deploy 
       - name: Deploy to server via SSH
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -92,6 +96,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "bank-automat/build/bank-automat"
+          source: "bank-automat/build/bank-automat,bank-automat/build/.env"
           target: "/home/ubuntu/pankkiautomaatti/group_2/"
           strip_components: 0
