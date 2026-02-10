@@ -10,7 +10,7 @@ The goal of the project is to demonstrate:
 - authentication and authorization
 - a desktop client consuming a REST API
 
-## Project Structure
+## Project Structure (core)
 
 ```
 pankkiautomaatti/
@@ -136,11 +136,11 @@ The client communicates with the backend using the REST API defined in `API_CONT
 ## Documentation
 
 All REST endpoints, request/response formats, roles and permissions are documented in:<br>
-📄 **API_CONTRACT_v2.md**<br>
+📄 [**API_CONTRACT_v2.md**](./API_CONTRACT_v2.md)<br>
 This file is the **single source of truth** for the backend API.
 
 Backend automatic startup are documented in:<br>
-📄 **SETUP_AUTOSTART.md**<br>
+📄 [**SETUP_AUTOSTART.md**](./SETUP_AUTOSTART.md)<br>
 This file documents PM2 installation and configuration
 
 ## Notes
