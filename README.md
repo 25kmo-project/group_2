@@ -1,71 +1,128 @@
-# Bank ATM Application
+# Bank ATM System
 
-Bank ATM is a full-stack school project that simulates a real ATM system.  
-The project consists of a **Node.js REST API backend** and a **Qt-based desktop client** that communicates with the backend over HTTP.
+A full-stack banking application developed as part of the Software Development Project course.
 
-The goal of the project is to demonstrate:
-- layered backend architecture
-- REST API design
-- database procedures and transactions
-- authentication and authorization
-- a desktop client consuming a REST API
+This system simulates a real-world ATM environment consisting of:
 
-## Project Structure (core)
+- MySQL database
+- Node.js REST API  
+- Qt C++ desktop ATM client  
+
+The project demonstrates layered architecture, secure authentication, database transactions and full-stack integration.
+
+
+# Project Poster
+
+![Project Poster](./bank-automat/images/background.png)
+HUOM: Tähän oikea kuva posterista, kunhan tehty.
+
+# System Architecture
 
 ```
-pankkiautomaatti/
-├── backend/ # Node.js REST API
-│ ├── controllers/ # Route controllers
-│ ├── db/ # SQL schema, procedures, seed data
-│ ├── middleware/ # Auth, authorization, error handling
-│ ├── routes/ # Express router resource files
-│ ├── app.js # Express app entry
-│ └── API_CONTRACT_v2.md # REST API specification
+Qt Desktop Client (C++ / Qt Widgets)
 │
-├── bank-automat/ # Qt (C++) ATM client
-│ ├── *.cpp / *.h # UI and logic
-│ └── CMakeLists.txt
+│ HTTP (JSON, JWT)
+▼
+Node.js REST API (Express)
 │
-├── SETUP_AUTOSTART.md # Backend automatic startup
-└── README.md # This file
+│ Stored Procedures
+▼
+MySQL Database
 ```
 
-## Technologies Used
+### Communication Flow
 
-### Backend
+1. Qt client sends HTTP request
+2. REST API validates JWT and business rules
+3. Stored procedure executes database logic
+4. JSON response returned to client
+
+# Project Goals
+
+- Implement a layered backend architecture
+- Design and implement a REST API
+- Use stored procedures for database logic
+- Implement authentication with JWT
+- Create a working ATM UI in Qt
+- Fulfill course minimum and advanced requirements
+
+# Project Team
+
+| Name | Responsibilities |
+|------|------------------|
+| [Juha Jermalainen](https://github.com/Sahid1981) | CRUD, Swagger, backend |
+| [Laura Similä](https://github.com/Llaamari) | Backend, REST API, frontend |
+| [Arttu Jämsä](https://github.com/Ard3J) | documentation, frontend, Qt |
+| [Valtteri Tenhunen](https://github.com/TTEVAR) | Image upload |
+
+(All members participated in planning, implementation and testing.)
+
+# Features Implemented
+
+## Core Requirements (Grade 1–2)
+
+- Debit account support
+- Qt application startup user interface
+- Card login with PIN verification
+- Balance display
+- Withdrawal (20€, 40€, 50€, 100€)
+- 10 latest transactions
+- 10-second PIN timeout
+- Full CRUD operations for all database tables
+
+## Advanced Features (Grade 3–4)
+
+- Credit account support
+- Credit limit handling
+- Withdrawal of any amount (only €20 and €50 notes at ATM)
+- Persistent card locking (stored in database)
+- 30-second global inactivity timeout
+- Transaction history browsing (pagination)
+
+## Excellent-Level Features (Grade 5)
+
+- Dual card support (debit + credit in one card)
+- Account selection after login
+- UML state diagram created
+- Role-based authorization (admin / user)
+- Structured API contract documentation
+- Clean MVC-style backend structure
+- Additional features:
+   - Uploading and displaying images
+   - Swagger documentation
+   - Logs
+   - Adding tests to the backend
+   - CI/CD
+   - Extra Qt application (admin)
+
+# Technologies Used
+
+## Backend
 - Node.js
 - Express
 - MySQL
 - JWT authentication
 - bcrypt (PIN hashing)
+- Stored procedures
+- Swagger documentation
+- CI/CD
 
-### Frontend
-- C++ / Qt
-- QNetworkAccessManager (REST client)
-- Qt Widgets
+## Frontend
+- C++ (Qt Widgets)
+- QNetworkAccessManager (API client)
+- CMake build system
 
-## Prerequisites
+# Backend Setup
 
-Before running the project, make sure you have:
-
-- Node.js (v18 or newer recommended)
-- MySQL / MariaDB
-- Qt (Qt Creator recommended)
-- CMake
-- Git
-
-## Backend Setup
-
-### 1. Install dependencies
+## 1. Install dependencies
 
 ```bash
 cd backend
 npm install
 ```
 
-### 2. Environment variables
+## 2. Create .env file
 
-Create a `.env` file inside `backend/`:
 ```env
 DB_HOST=localhost
 DB_USER=root
@@ -79,81 +136,94 @@ PIN_PEPPER=your-pepper-value
 PORT=3000
 ```
 
-### 3. Database initialization
+## 3. Initialize database
 
-Create the database and import schema, procedures and seed data:
 ```bash
 cd backend/db
 mysql -u root -p bank_db < schema.sql
 mysql -u root -p bank_db < procedures.sql
 mysql -u root -p bank_db < seed.sql
 ```
-Seed data includes test users, cards and accounts for development.
 
-### 4. Start backend server
+## 4. Start backend
 
 ```bash
 cd backend
 npm start
 ```
-Backend will run at:
+Backend runs at:
 ```arduino
 http://localhost:3000
 ```
-Swagger UI (API documentation):
+Swagger documentation:
 ```bash
 http://localhost:3000/docs
 ```
 
-## Frontend (Qt ATM Client)
+# Qt ATM Client
 
-1. Open the `bank-automat` folder in Qt Creator
-2. Configure the project with CMake
-3. Build and run the application
+1. Open `bank-automat` in Qt Creator
+2. Configure with CMake
+3. Build and run
 
-The client communicates with the backend using the REST API defined in `API_CONTRACT_v2.md`.
+The client communicates with the backend using the REST API.
 
-## Authentication Flow (High Level)
+# Authentication Flow
 
-1. User inserts card number and PIN
-2. Backend validates PIN and issues JWT token
-3. Client stores token in memory
-4. Token is sent in `Authorization: Bearer <token>` header
-5. User selects account and performs ATM operations
+1. User enters card ID and PIN
+2. Backend validates PIN (bcrypt + pepper)
+3. JWT token issued
+4. Token stored in memory
+5. Token sent in Authorization header
+6. Account selected (if multiple)
+7. ATM operations performed
 
-## Test Credentials
+# Test Credentials
 
-### Regular user
+### Regular User
 
-- **Card**: `CARD123456`
-- **PIN**: `1234`
+- Card: `CARD123456`
+- PIN: `1234`
 
-### Admin user
+### Admin User
 
-- **Card**: `ADMINCARD`
-- **PIN**: `admin123`
+- Card: `ADMINCARD`
+- PIN: `admin123`
 
-## Documentation
+# Documentation
 
-All REST endpoints, request/response formats, roles and permissions are documented in:<br>
-📄 [**API_CONTRACT_v2.md**](./backend/API_CONTRACT_v2.md)<br>
-This file is the **single source of truth** for the backend API.
+### REST API Contract
 
-Backend automatic startup are documented in:<br>
-📄 [**SETUP_AUTOSTART.md**](./SETUP_AUTOSTART.md)<br>
-This file documents PM2 installation and configuration
+📄 [API_CONTRACT_v2.md](./backend/API_CONTRACT_v2.md)
 
-Stored procedures are documented in:<br>
-📄 [**STORED_PROCEDURES.md**](./backend/db/STORED_PROCEDURES.md)<br>
-This file documents all stored procedures used by the backend.
+### Stored Procedures
 
-## Notes
+📄 [STORED_PROCEDURES.md](./backend/db/STORED_PROCEDURES.md)
 
-- PIN codes are never stored in plain text
-- Database operations use stored procedures
-- ATM actions automatically create transaction logs
-- Role-based authorization is enforced on the backend
+### Backend Autostart (PM2)
 
-## License
+📄 [SETUP_AUTOSTART.md](./SETUP_AUTOSTART.md)
 
-This project is created for educational purposes.
+# Project Management
+
+- Git + GitHub version control
+- Feature branches + Pull Requests
+- Kanban board used for task management
+- Weekly progress meetings
+- Technical specification document created
+- UML diagrams (ER, component, state diagram)
+
+# Security Considerations
+
+- PIN codes stored as bcrypt hashes
+- Additional server-side pepper
+- JWT authentication
+- Role-based access control
+- Database access only through stored procedures
+- Server-side validation for all financial operations
+
+# License
+
+This project is developed for educational purposes.
+
+MIT License can be applied if published publicly.
