@@ -16,18 +16,46 @@ The project demonstrates layered architecture, secure authentication, database t
 ![Project Poster](./bank-automat/images/background.png)
 HUOM: Tähän oikea kuva posterista, kunhan tehty.
 
+## Table of Contents
+
+- [Project Overview](#bank-atm-system)
+- [Project Poster](#project-poster)
+- [System Architecture](#system-architecture)
+- [Project Goals](#project-goals)
+- [Project Team](#project-team)
+- [Features Implemented](#features-implemented)
+- [Technologies Used](#technologies-used)
+- [Backend Setup](#backend-setup)
+- [Qt ATM Client](#qt-atm-client)
+- [Authentication Flow](#authentication-flow)
+- [Test Credentials](#test-credentials)
+- [Documentation](#documentation)
+- [Project Management](#project-management)
+- [Security Considerations](#security-considerations)
+- [License](#license)
+
 # System Architecture
 
-```
-Qt Desktop Client (C++ / Qt Widgets)
-│
-│ HTTP (JSON, JWT)
-▼
-Node.js REST API (Express)
-│
-│ Stored Procedures
-▼
-MySQL Database
+## System Architecture
+
+```text
++----------------------+
+|  Qt Desktop Client   |
+|  (C++ / Qt Widgets)  |
++----------+-----------+
+           |
+           | HTTP (JSON, JWT)
+           v
++----------------------+
+|  Node.js REST API    |
+|  (Express)           |
++----------+-----------+
+           |
+           | Stored Procedures
+           v
++----------------------+
+|  MySQL Database      |
++----------------------+
 ```
 
 ### Communication Flow
