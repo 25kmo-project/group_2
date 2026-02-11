@@ -143,6 +143,10 @@ Backend automatic startup are documented in:<br>
 📄 [**SETUP_AUTOSTART.md**](./SETUP_AUTOSTART.md)<br>
 This file documents PM2 installation and configuration
 
+Stored procedures are documented in:<br>
+📄 [**STORED_PROCEDURES.md**](./backend/db/STORED_PROCEDURES.md)<br>
+This file documents all stored procedures used by the backend.
+
 ## Notes
 
 - PIN codes are never stored in plain text
