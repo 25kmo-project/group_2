@@ -73,6 +73,10 @@ HUOM: Tähän oikea kuva posterista, kunhan tehty.
 3. Stored procedure executes database logic
 4. JSON response returned to client
 
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
+
 # Project Goals
 
 - Implement a layered backend architecture
@@ -81,6 +85,10 @@ HUOM: Tähän oikea kuva posterista, kunhan tehty.
 - Implement authentication with JWT
 - Create a working ATM UI in Qt
 - Fulfill course minimum and advanced requirements
+
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
 
 # Project Team
 
@@ -92,6 +100,10 @@ HUOM: Tähän oikea kuva posterista, kunhan tehty.
 | [Valtteri Tenhunen](https://github.com/TTEVAR) | Image upload |
 
 (All members participated in planning, implementation and testing.)
+
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
 
 # Features Implemented
 
@@ -131,6 +143,10 @@ HUOM: Tähän oikea kuva posterista, kunhan tehty.
    - CI/CD
    - Extra Qt application (admin)
 
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
+
 # Technologies Used
 
 ## Backend
@@ -147,6 +163,10 @@ HUOM: Tähän oikea kuva posterista, kunhan tehty.
 - C++ (Qt Widgets)
 - QNetworkAccessManager (API client)
 - CMake build system
+
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
 
 # Backend Setup
 
@@ -196,6 +216,10 @@ Swagger documentation:
 http://localhost:3000/docs
 ```
 
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
+
 # Qt ATM Client
 
 1. Open `bank-automat` in Qt Creator
@@ -203,6 +227,10 @@ http://localhost:3000/docs
 3. Build and run
 
 The client communicates with the backend using the REST API.
+
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
 
 # Authentication Flow
 
@@ -213,6 +241,10 @@ The client communicates with the backend using the REST API.
 5. Token sent in Authorization header
 6. Account selected (if multiple)
 7. ATM operations performed
+
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
 
 # Test Credentials
 
@@ -225,6 +257,10 @@ The client communicates with the backend using the REST API.
 
 - Card: `ADMINCARD`
 - PIN: `admin123`
+
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
 
 # Documentation
 
@@ -240,6 +276,10 @@ The client communicates with the backend using the REST API.
 
 📄 [SETUP_AUTOSTART.md](./SETUP_AUTOSTART.md)
 
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
+
 # Project Management
 
 - Git + GitHub version control
@@ -248,6 +288,10 @@ The client communicates with the backend using the REST API.
 - Weekly progress meetings
 - Technical specification document created
 - UML diagrams (ER, component, state diagram)
+
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
 
 # Security Considerations
 
@@ -258,8 +302,16 @@ The client communicates with the backend using the REST API.
 - Database access only through stored procedures
 - Server-side validation for all financial operations
 
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
+
 # License
 
 This project is developed for educational purposes.
 
 MIT License can be applied if published publicly.
+
+<div align="right">
+<a href="#table-of-contents">Back to top</a>
+</div>
