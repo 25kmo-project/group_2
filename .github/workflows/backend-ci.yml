@@ -65,8 +65,9 @@ jobs:
                   username: ${{ secrets.SERVER_USER }}
                   key: ${{ secrets.SSH_PRIVATE_KEY}}
                   script: |
-                      cd /home/ubuntu/pankkiautomaatti/group_2/backend
-                      git pull origin main
+                      cd /home/ubuntu/pankkiautomaatti/group_2
+                      git pull https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
+                      cd backend
                       npm ci --production
                       
                       # Luo .env tiedosto secretseistä
@@ -78,4 +79,5 @@ jobs:
                       echo "PIN_PEPPER=${{ secrets.PIN_PEPPER }}" >> .env
                       echo "SERVER_HOST=${{ secrets.SERVER_HOST }}" >> .env
                       
-                      pm2 reload backend --update-env
+                      pm2 delete backend || true
+                      pm2 start ecosystem.config.js --update-env
