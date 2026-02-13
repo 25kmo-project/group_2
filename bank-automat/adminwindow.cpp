@@ -343,13 +343,17 @@ void adminwindow::on_btnKayttajaPaivitaTietoja_clicked()
     QString inputAddress = ui->lineAsiakkaatAddress->text().trimmed();
     //Cant change this currently
     //QString inputRole = ui->lineAsiakkaatRole->text().trimmed();
-
-    QString currentFName = ui->tableUserData->model()->index(0,1).data().toString();
-    QString currentLName = ui->tableUserData->model()->index(0,2).data().toString();
-    QString currentAddress = ui->tableUserData->model()->index(0,3).data().toString();
-    //Cant change role currently
-    //QString currentRole = ui->tableUserData->model()->index(0,4).data().toString();
+    int rowUser = 0;
     if (!idUser.isEmpty()) {
+        rowUser = userData->findRow(idUser);
+    }
+    qDebug() << "Rivi adminissa: " << rowUser;
+    if (!idUser.isEmpty() && rowUser > 0) {
+        QString currentFName = ui->tableUserData->model()->index(rowUser,1).data().toString();
+        QString currentLName = ui->tableUserData->model()->index(rowUser,2).data().toString();
+        QString currentAddress = ui->tableUserData->model()->index(rowUser,3).data().toString();
+        //Cant change role currently
+        //QString currentRole = ui->tableUserData->model()->index(rowUser,4).data().toString();
         QString fname = inputFName.isEmpty() ? currentFName : inputFName;
         QString lname = inputLName.isEmpty() ? currentLName : inputLName;
         QString streetAddress = inputAddress.isEmpty() ? currentAddress : inputAddress;

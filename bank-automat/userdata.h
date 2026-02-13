@@ -16,6 +16,7 @@ public:
     QStandardItemModel* getModel() const { return tableModel;};
 
     void updateModel();
+    int findRow(QString idUser);
 
 private:
     QByteArray userDataArray;
