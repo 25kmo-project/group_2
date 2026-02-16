@@ -26,6 +26,10 @@
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "role": "user",
+  "fName": "Testi",
+  "avatarUrl": "/uploads/avatars/TESTUSER1.png",
+  "avatarType": "uploaded",
   "card": {
     "idCard": "CARD123456",
     "idUser": "TESTUSER1",
@@ -185,6 +189,8 @@ Response (200 OK)
   "firstName": "Matti",
   "lastName": "Meikäläinen",
   "streetAddress": "Example Street 1",
+  "avatarUrl": "/uploads/avatars/USER123.png",
+  "avatarType": "uploaded",
   "role": "user"
 }
 ```
@@ -334,6 +340,51 @@ Response (200 OK)
 ### Get account logs (newest first)
 
 **GET `/log/:idAccount`**
+
+## 6.7 Avatars
+
+> These endpoints currently do not require JWT.
+
+### Get preselected avatars
+
+**GET `/avatars/preselected`**
+
+**Response (200 OK)**
+```json
+[
+  { "id": 1, "name": "Robot", "url": "/uploads/pre/robot.png" },
+  { "id": 2, "name": "Alien", "url": "/uploads/pre/alien.png" }
+]
+```
+
+### Upload avatar (PNG)
+
+**POST `/avatar/upload`**
+
+**Request (multipart/form-data)**
+```
+userId=TESTUSER1
+avatar=<PNG file>
+```
+
+**Response (200 OK)**
+```json
+{ "success": true, "avatar": "/uploads/avatars/USER123.png" }
+```
+
+### Select preselected avatar
+
+**POST `/avatar/select/preselected`**
+
+**Request**
+```json
+{ "userId": "TESTUSER1", "avatarId": 1 }
+```
+
+**Response (200 OK)**
+```json
+{ "success": true, "avatar": "/uploads/pre/robot.png" }
+```
 
 ## 7) Environment Variables
 

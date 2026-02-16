@@ -54,6 +54,21 @@ components:
           type: string
           description: "JWT token, käytä TOKEN-painiketta tallentaaksesi sen"
           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        role:
+          type: string
+          enum: [user, admin]
+          example: "user"
+        fName:
+          type: string
+          example: "Matti"
+        avatarUrl:
+          type: string
+          nullable: true
+          example: "/uploads/avatars/USER123.png"
+        avatarType:
+          type: string
+          nullable: true
+          example: "uploaded"
         card:
           $ref: "#/components/schemas/Card"
         accounts:
@@ -132,10 +147,45 @@ components:
         streetAddress:
           type: string
           example: "Testikatu 1"
+        avatarUrl:
+          type: string
+          nullable: true
+          example: "/uploads/avatars/USER123.png"
+        avatarType:
+          type: string
+          nullable: true
+          example: "uploaded"
         role:
           type: string
           enum: [user, admin]
           example: "user"
+
+    AvatarPreselected:
+      type: object
+      properties:
+        id:
+          oneOf:
+            - type: integer
+              example: 1
+            - type: string
+              example: "1"
+        name:
+          type: string
+          nullable: true
+          example: "Robot"
+        url:
+          type: string
+          example: "/uploads/pre/robot.png"
+
+    AvatarUpdateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        avatar:
+          type: string
+          example: "/uploads/avatars/USER123.png"
 
     WithdrawRequest:
       type: object
@@ -934,3 +984,90 @@ paths:
           description: Tapahtumalogit
         "403":
           description: Admin-oikeudet vaaditaan
+
+  /avatars/preselected:
+    get:
+      tags: [Avatar]
+      summary: Hae valmiit avatar-kuvat
+      description: Palauttaa listan valmiista avatar-vaihtoehdoista.
+      responses:
+        "200":
+          description: Lista preselected avatareista
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AvatarPreselected"
+        "500":
+          description: Palvelinvirhe
+
+  /avatar/upload:
+    post:
+      tags: [Avatar]
+      summary: Lataa oma avatar-kuva
+      description: |
+        Lataa PNG-kuvan (max 5MB) ja liita se kayttajaan.
+        Kentta `avatar` on tiedosto ja `userId` on kayttajan tunnus.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [userId, avatar]
+              properties:
+                userId:
+                  type: string
+                  example: "TESTUSER1"
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Avatar paivitetty
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvatarUpdateResponse"
+        "400":
+          description: Virheellinen pyynto tai tiedosto
+        "404":
+          description: Kayttajaa ei loydy
+        "500":
+          description: Palvelinvirhe
+
+  /avatar/select/preselected:
+    post:
+      tags: [Avatar]
+      summary: Valitse valmiista avatareista
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, avatarId]
+              properties:
+                userId:
+                  type: string
+                  example: "TESTUSER1"
+                avatarId:
+                  oneOf:
+                    - type: integer
+                      example: 1
+                    - type: string
+                      example: "1"
+      responses:
+        "200":
+          description: Avatar paivitetty
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvatarUpdateResponse"
+        "400":
+          description: Virheellinen pyynto
+        "404":
+          description: Kayttajaa tai avatareja ei loydy
+        "500":
+          description: Palvelinvirhe
