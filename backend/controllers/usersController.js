@@ -11,6 +11,8 @@ function mapUserRow(row) {
         firstName: row.fname,
         lastName: row.lname,
         streetAddress: row.streetaddress,
+        avatarUrl: row.avatarUrl || null,
+        avatarType: row.avatarType || null,
         role: row.role || 'user',
     };
 }

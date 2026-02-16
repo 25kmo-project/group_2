@@ -133,7 +133,7 @@ BEGIN
   END IF;
 
   -- Retrieve user info including role
-  SELECT iduser, fname, lname, streetaddress, role
+  SELECT iduser, fname, lname, streetaddress, avatarUrl, avatarType, role
   FROM users
   WHERE iduser = p_iduser;
 END$$
@@ -148,7 +148,7 @@ DELIMITER $$
 
 CREATE PROCEDURE sp_read_all_users()
 BEGIN
-  SELECT iduser, fname, lname, streetaddress, role
+  SELECT iduser, fname, lname, streetaddress, avatarUrl, avatarType, role
   FROM users;
 END$$
 DELIMITER ;

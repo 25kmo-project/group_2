@@ -76,6 +76,8 @@ async function login(req, res, next) {
         const user = userRows[0] || null;
         const userRole = user?.role ?? 'user';
         const fName = user?.fname ?? '';
+        const avatarUrl = user?.avatarUrl ?? null;
+        const avatarType = user?.avatarType ?? null;
 
         // Get linked accounts using cardaccount procedure
         const [linkResults] = await pool.execute('CALL sp_get_card_info(?)', [idCard]);
@@ -106,6 +108,8 @@ async function login(req, res, next) {
             token,
             role: userRole,
             fName,
+            avatarUrl,
+            avatarType,
             card: {
                 idCard: card.idcard,
                 idUser: card.iduser,
