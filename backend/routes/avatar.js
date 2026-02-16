@@ -40,19 +40,6 @@ if (!fs.existsSync(PRE_DIR)){
 }
 
 // DB reads/writes now in place; removed in-memory mock
-let ensureAvatarColumnsPromise = null;
-function ensureAvatarColumns() {
-  if (!ensureAvatarColumnsPromise) {
-    ensureAvatarColumnsPromise = (async () => {
-      await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatarUrl VARCHAR(512) NULL");
-      await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatarType VARCHAR(20) NULL");
-    })().catch((err) => {
-      ensureAvatarColumnsPromise = null;
-      throw err;
-    });
-  }
-  return ensureAvatarColumnsPromise;
-}
 
 function deleteAvatarFile(avatarUrl) {
   if (!avatarUrl) return;
@@ -100,7 +87,6 @@ const getPreselectedHandler = (req, res) => {
 const uploadAvatarHandler = async (req, res) => {
   try {
     console.log("[avatar] POST upload:", req.originalUrl);
-    await ensureAvatarColumns();
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ error: "userId is required" });
     if (!req.file || !req.file.buffer) return res.status(400).json({ error: "No file uploaded" });
@@ -124,7 +110,16 @@ const uploadAvatarHandler = async (req, res) => {
 
     res.json({ success: true, avatar: avatarUrl });
   } catch (err) {
-    console.error("Avatar upload error:", err);
+    console.error("Avatar upload error:", {
+      code: err?.code,
+      errno: err?.errno,
+      sqlState: err?.sqlState,
+      sqlMessage: err?.sqlMessage,
+      message: err?.message
+    });
+    if (err?.code && String(err.code).startsWith("ER_")) {
+      return res.status(500).json({ error: "Database error", code: err.code });
+    }
     res.status(400).json({ error: "Invalid image file" });
   }
 };
@@ -135,7 +130,6 @@ const selectPreselectedHandler = (req, res) => {
   const { userId, avatarId } = req.body;
   (async () => {
     try {
-      await ensureAvatarColumns();
       if (!userId || !avatarId) return res.status(400).json({ error: "userId and avatarId are required" });
       // Query user from DB
       const [rows] = await pool.query('SELECT iduser, avatarUrl, avatarType FROM users WHERE iduser = ?', [userId]);
@@ -174,7 +168,16 @@ const selectPreselectedHandler = (req, res) => {
 
       res.json({ success: true, avatar: selectedUrl });
     } catch (err) {
-      console.error("Preselected avatar select error:", err);
+      console.error("Preselected avatar select error:", {
+        code: err?.code,
+        errno: err?.errno,
+        sqlState: err?.sqlState,
+        sqlMessage: err?.sqlMessage,
+        message: err?.message
+      });
+      if (err?.code && String(err.code).startsWith("ER_")) {
+        return res.status(500).json({ error: "Database error", code: err.code });
+      }
       res.status(500).json({ error: "Failed to select avatar" });
     }
   })();
