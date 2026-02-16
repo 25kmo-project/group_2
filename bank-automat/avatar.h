@@ -56,6 +56,7 @@ private:
     QTimer* m_inactivityTimer = nullptr;
     QNetworkAccessManager* m_avatarNam = nullptr;
     bool m_hasAvatarShown = false;
+    bool m_hasUploadedAvatar = false;
     QPixmap m_lastDisplayedPixmap;
 
     // Initialization

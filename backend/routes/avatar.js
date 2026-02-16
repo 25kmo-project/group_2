@@ -11,7 +11,7 @@ const multer = require("multer");
 // create local multer instance to ensure .single exists
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 1 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype !== "image/png") return cb(new Error("Only PNG images allowed"), false);
     cb(null, true);
@@ -155,11 +155,6 @@ const selectPreselectedHandler = (req, res) => {
         const idx = parseInt(avatarId, 10) - 1;
         if (!files[idx]) return res.status(404).json({ error: "Avatar not found" });
         selectedUrl = `/uploads/pre/${files[idx]}`;
-      }
-
-      // Delete previous uploaded avatar if it was user-uploaded
-      if (user.avatarType === "uploaded" && user.avatarUrl) {
-        deleteAvatarFile(user.avatarUrl);
       }
 
       // Update DB

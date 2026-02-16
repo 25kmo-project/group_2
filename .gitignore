@@ -7,3 +7,4 @@ node_modules/
 .envgit
 backend/logs/
 .github/*.md
+*.png

@@ -13,6 +13,9 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QPushButton>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
 // accountselect is a modal dialog shown after login, allowing the user to choose between Debit and Credit accounts
 accountselect::accountselect(
@@ -41,6 +44,14 @@ accountselect::accountselect(
     ph.fill(QColor("#e9e9e9"));
     m_avatarPreview->setPixmap(ph);
     
+    // Initialize network manager for loading avatars
+    m_avatarNam = new QNetworkAccessManager(this);
+
+    // Load avatar from login result if available
+    if (!m_login.avatarUrl.isEmpty()) {
+        loadAvatarFromUrl(m_login.avatarUrl);
+    }
+    
     // Build a map from account type ("debit"/"credit") to account ID
     for (const AccountDto& acc : m_login.accounts) {
         accountIdByType[acc.type.toLower()] = acc.idAccount;
@@ -62,6 +73,8 @@ accountselect::accountselect(
         "background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold;"
     );
     connect(btnEditAvatar, &QPushButton::clicked, this, &accountselect::openAvatarDialog);
+    
+    // Network manager already initialized above
 }
 
 // Destructor: clean up UI
@@ -157,6 +170,32 @@ void accountselect::resizeEvent(QResizeEvent *event)
             m_avatarPreview->setPixmap(m_avatarPixmap.scaled(m_avatarPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
     }
+}
+
+void accountselect::loadAvatarFromUrl(const QString& url)
+{
+    if (url.isEmpty() || !m_avatarNam) return;
+    
+    QUrl resolvedUrl(url);
+    if (!resolvedUrl.isValid() || resolvedUrl.isRelative()) {
+        if (m_api) {
+            resolvedUrl = m_api->baseUrl().resolved(QUrl(url));
+        }
+    }
+    
+    if (!resolvedUrl.scheme().startsWith("http")) return;
+    
+    QNetworkReply* reply = m_avatarNam->get(QNetworkRequest(resolvedUrl));
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        const QByteArray bytes = reply->readAll();
+        QPixmap pixmap;
+        const bool loaded = pixmap.loadFromData(bytes);
+        reply->deleteLater();
+        
+        if (loaded && !pixmap.isNull()) {
+            setAvatarPreview(pixmap);
+        }
+    });
 }
 
 

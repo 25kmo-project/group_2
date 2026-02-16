@@ -17,6 +17,7 @@
 #include <QPixmap>
 #include <QPointer>
 #include <QTimer>
+#include <QNetworkAccessManager>
 
 #include "apiclient.h"
 
@@ -84,6 +85,9 @@ private:
     void openAccountWindow();
     void openAdminWindow();
     void setAvatarPreview(const QPixmap& pixmap);
+    void loadAvatarFromUrl(const QString& url);
+    
+    QNetworkAccessManager* m_avatarNam = nullptr;
 };
 
 #endif // ACCOUNTSELECT_H

@@ -254,6 +254,7 @@ void avatar::on_btnSelectPreselected_clicked()
 
         // Display selected avatar
         displayAvatar(avatarUrl);
+        m_hasUploadedAvatar = false;
 
         // Call API to save selection
         if (m_api)
@@ -267,7 +268,7 @@ void avatar::on_btnSelectPreselected_clicked()
 
 void avatar::on_btnApply_clicked()
 {
-    if (comboPreselected && comboPreselected->currentIndex() >= 0 && comboPreselected->currentIndex() < m_preselectedAvatars.size()) {
+    if (!m_hasUploadedAvatar && comboPreselected && comboPreselected->currentIndex() >= 0 && comboPreselected->currentIndex() < m_preselectedAvatars.size()) {
         QJsonObject avatarObj = m_preselectedAvatars[comboPreselected->currentIndex()].toObject();
         const QJsonValue idValue = avatarObj["id"];
         const QString avatarId = idValue.isString() ? idValue.toString() : QString::number(idValue.toInt());
@@ -312,6 +313,7 @@ void avatar::on_avatarUploadSucceeded(const QString& avatarUrl)
 {
     setEnabled(true);
     m_currentAvatarUrl = avatarUrl;
+    m_hasUploadedAvatar = true;
     displayAvatar(avatarUrl);
     qDebug() << "Avatar uploaded successfully: " << avatarUrl;
 
@@ -321,6 +323,7 @@ void avatar::on_avatarUploadSucceeded(const QString& avatarUrl)
 void avatar::on_avatarSelectSucceeded(const QString& avatarUrl)
 {
     m_currentAvatarUrl = avatarUrl;
+    m_hasUploadedAvatar = false;
     displayAvatar(avatarUrl);
     qDebug() << "Avatar selected successfully: " << avatarUrl;
 }

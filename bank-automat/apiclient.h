@@ -45,6 +45,8 @@ struct LoginResultDto {
     QString idUser;                         // User identifier
     QString fName;                          // User first name
     QString role;                           // User role
+    QString avatarUrl;                      // Avatar URL from server
+    QString avatarType;                     // Avatar type (uploaded/preselected)
     bool isLocked = false;                  // Whether the card is locked
     QVector<AccountDto> accounts;           // Accounts linked to the card
     bool requiresAccountSelection = false;  // True if user must choose an account
