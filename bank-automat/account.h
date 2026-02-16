@@ -11,6 +11,7 @@
 #include <QTimer>
 #include <QLabel>
 #include <QKeyEvent>
+#include <QPixmap>
 #include "logs.h"
 #include "apiclient.h"
 
@@ -23,7 +24,7 @@ class account : public QDialog
     Q_OBJECT
 
 public:
-    explicit account(int idAccount, const QString& idUser, const QString& fName, ApiClient* api, QWidget *parent = nullptr);
+    explicit account(int idAccount, const QString& idUser, const QString& fName, ApiClient* api, const QPixmap& avatarPixmap = QPixmap(), QWidget *parent = nullptr);
     ~account();
 
 private:
@@ -32,6 +33,8 @@ private:
     int m_idAccount = 0;
     QString m_idUser;
     QString m_fName;
+    QPixmap m_avatarPixmap;
+    QLabel* m_avatarPreview = nullptr;
     logs* tapahtumat = nullptr;
     double saldo = 0.0;
     double creditlimit = 0.0;
@@ -51,6 +54,7 @@ private:
 protected:
     void paintEvent(QPaintEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 private slots:
     void on_btnSaldo_clicked();
     void on_btnTapahtumat_clicked();

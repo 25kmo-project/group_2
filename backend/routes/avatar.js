@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const fs = require("fs");
 const path = require("path");
 const config = require("../config");
+const pool = require("../db");
 
 const multer = require("multer");
 // create local multer instance to ensure .single exists
@@ -38,11 +39,20 @@ if (!fs.existsSync(PRE_DIR)){
     fs.mkdirSync(PRE_DIR, { recursive: true });
 }
 
-// fake users (replace with DB later)
-const users = {
-  "1": { id: 1, avatarUrl: "/uploads/avatars/test.png", avatarType: "uploaded" },
-  "2": { id: 2, avatarUrl: null, avatarType: null }
-};
+// DB reads/writes now in place; removed in-memory mock
+let ensureAvatarColumnsPromise = null;
+function ensureAvatarColumns() {
+  if (!ensureAvatarColumnsPromise) {
+    ensureAvatarColumnsPromise = (async () => {
+      await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatarUrl VARCHAR(512) NULL");
+      await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatarType VARCHAR(20) NULL");
+    })().catch((err) => {
+      ensureAvatarColumnsPromise = null;
+      throw err;
+    });
+  }
+  return ensureAvatarColumnsPromise;
+}
 
 function deleteAvatarFile(avatarUrl) {
   if (!avatarUrl) return;
@@ -62,7 +72,8 @@ function toCdnUrl(url) {
 }
 
 // Get pre-selected avatars by listing files in public/uploads/pre
-router.get("/api/avatars/preselected", (req, res) => {
+const getPreselectedHandler = (req, res) => {
+  console.log("[avatar] GET preselected:", req.originalUrl);
   let avatarsDataPath = null;
   if (fs.existsSync(PREAVATARS_PATH)) avatarsDataPath = PREAVATARS_PATH;
   else if (fs.existsSync(PREAVATARS_ALT)) avatarsDataPath = PREAVATARS_ALT;
@@ -83,16 +94,20 @@ router.get("/api/avatars/preselected", (req, res) => {
     const avatars = files.filter(f => /\.(png|jpg|jpeg)$/i.test(f)).map((f, i) => ({ id: `${i + 1}`, url: `/uploads/pre/${f}` }));
     res.json(avatars);
   });
-});
+};
 
 /* ---------------- UPLOAD AVATAR ---------------- */
-router.post("/api/avatar/upload", uploadLimiter, upload.single("avatar"), async (req, res) => {
+const uploadAvatarHandler = async (req, res) => {
   try {
+    console.log("[avatar] POST upload:", req.originalUrl);
+    await ensureAvatarColumns();
     const { userId } = req.body;
-    const user = users[userId];
-    if (!user) return res.status(404).json({ error: "User not found" });
-
+    if (!userId) return res.status(400).json({ error: "userId is required" });
     if (!req.file || !req.file.buffer) return res.status(400).json({ error: "No file uploaded" });
+
+    // Query user from DB
+    const [rows] = await pool.query('SELECT iduser FROM users WHERE iduser = ?', [userId]);
+    if (!rows || !rows[0]) return res.status(404).json({ error: "User not found" });
 
     const filename = uuidv4() + ".png";
     const filepath = path.join(AVATAR_DIR, filename);
@@ -102,58 +117,80 @@ router.post("/api/avatar/upload", uploadLimiter, upload.single("avatar"), async 
       .png({ compressionLevel: 9, adaptiveFiltering: true, force: true })
       .toFile(filepath);
 
+    // Save to DB
+    const avatarUrl = `/uploads/avatars/${filename}`;
+    await pool.query('UPDATE users SET avatarUrl = ?, avatarType = ? WHERE iduser = ?', 
+      [avatarUrl, 'uploaded', userId]);
 
-    user.avatarUrl = `/uploads/avatars/${filename}`;
-    user.avatarType = "uploaded";
-
-    res.json({ success: true, avatar: user.avatarUrl });
+    res.json({ success: true, avatar: avatarUrl });
   } catch (err) {
+    console.error("Avatar upload error:", err);
     res.status(400).json({ error: "Invalid image file" });
   }
-});
+};
 
 // Choose a pre-selected avatar
-router.post("/api/avatar/select/preselected", (req, res) => {
+const selectPreselectedHandler = (req, res) => {
+  console.log("[avatar] POST select preselected:", req.originalUrl);
   const { userId, avatarId } = req.body;
-  const user = users[userId];
-  if (!user) return res.status(404).json({ error: "User not found" });
+  (async () => {
+    try {
+      await ensureAvatarColumns();
+      if (!userId || !avatarId) return res.status(400).json({ error: "userId and avatarId are required" });
+      // Query user from DB
+      const [rows] = await pool.query('SELECT iduser, avatarUrl, avatarType FROM users WHERE iduser = ?', [userId]);
+      if (!rows || !rows[0]) return res.status(404).json({ error: "User not found" });
 
-  if (fs.existsSync(PREAVATARS_PATH)) {
-    let avatarsSelectPath = null;
-    if (fs.existsSync(PREAVATARS_PATH)) avatarsSelectPath = PREAVATARS_PATH;
-    else if (fs.existsSync(PREAVATARS_ALT)) avatarsSelectPath = PREAVATARS_ALT;
+      const user = rows[0];
 
-    if (avatarsSelectPath) {
-      try {
-        const data = fs.readFileSync(avatarsSelectPath, "utf8");
-        console.log("preavatars.json raw (select):", data);
+      let selectedUrl = null;
+      if (fs.existsSync(PREAVATARS_PATH)) {
+        const data = fs.readFileSync(PREAVATARS_PATH, "utf8");
         const avatars = JSON.parse(data).map(a => ({ ...a, url: toCdnUrl(a.url) }));
         const avatar = avatars.find(a => `${a.id}` === `${avatarId}`);
         if (!avatar) return res.status(404).json({ error: "Avatar not found" });
-        if (user.avatarType === "uploaded") deleteAvatarFile(user.avatarUrl);
-        user.avatarUrl = avatar.url;
-        user.avatarType = "preselected";
-        return res.json({ success: true, avatar: user.avatarUrl });
-      } catch (e) {
-        console.error("Failed to parse preavatars.json (select):", e);
-        return res.status(500).json({ error: "Invalid preavatars.json" });
+        selectedUrl = avatar.url;
+      } else if (fs.existsSync(PREAVATARS_ALT)) {
+        const data = fs.readFileSync(PREAVATARS_ALT, "utf8");
+        const avatars = JSON.parse(data).map(a => ({ ...a, url: toCdnUrl(a.url) }));
+        const avatar = avatars.find(a => `${a.id}` === `${avatarId}`);
+        if (!avatar) return res.status(404).json({ error: "Avatar not found" });
+        selectedUrl = avatar.url;
+      } else {
+        const files = fs.readdirSync(PRE_DIR).filter(f => /\.(png|jpg|jpeg)$/i.test(f));
+        const idx = parseInt(avatarId, 10) - 1;
+        if (!files[idx]) return res.status(404).json({ error: "Avatar not found" });
+        selectedUrl = `/uploads/pre/${files[idx]}`;
       }
+
+      // Delete previous uploaded avatar if it was user-uploaded
+      if (user.avatarType === "uploaded" && user.avatarUrl) {
+        deleteAvatarFile(user.avatarUrl);
+      }
+
+      // Update DB
+      await pool.query('UPDATE users SET avatarUrl = ?, avatarType = ? WHERE iduser = ?', 
+        [selectedUrl, 'preselected', userId]);
+
+      res.json({ success: true, avatar: selectedUrl });
+    } catch (err) {
+      console.error("Preselected avatar select error:", err);
+      res.status(500).json({ error: "Failed to select avatar" });
     }
-  }
+  })();
+};
 
-  // map avatarId to file in PRE_DIR
-  const files = fs.readdirSync(PRE_DIR).filter(f => /\.(png|jpg|jpeg)$/i.test(f));
-  const idx = parseInt(avatarId, 10) - 1;
-  if (!files[idx]) return res.status(404).json({ error: "Avatar not found" });
+// Support both mount styles:
+// - app.use("/", avatarRouter)      -> use /api/... paths
+// - app.use("/api", avatarRouter)   -> use /... paths
+router.get("/api/avatars/preselected", getPreselectedHandler);
+router.get("/avatars/preselected", getPreselectedHandler);
 
-  // delete previous uploaded avatar if any
-  if (user.avatarType === "uploaded") deleteAvatarFile(user.avatarUrl);
+router.post("/api/avatar/upload", uploadLimiter, upload.single("avatar"), uploadAvatarHandler);
+router.post("/avatar/upload", uploadLimiter, upload.single("avatar"), uploadAvatarHandler);
 
-  user.avatarUrl = `/uploads/pre/${files[idx]}`;
-  user.avatarType = "preselected";
-
-  res.json({ success: true, avatar: user.avatarUrl });
-});
+router.post("/api/avatar/select/preselected", selectPreselectedHandler);
+router.post("/avatar/select/preselected", selectPreselectedHandler);
 
 module.exports = router;
 

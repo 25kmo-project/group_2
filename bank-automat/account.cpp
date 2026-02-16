@@ -45,19 +45,32 @@ void account::showWithdrawError(QLabel *label, const QString &text, int ms)
     });
 }
 
-account::account(int idAccount, const QString& idUser, const QString& fName, ApiClient* api, QWidget *parent)
+account::account(int idAccount, const QString& idUser, const QString& fName, ApiClient* api, const QPixmap& avatarPixmap, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::account)
     , m_api(api)
     , m_idAccount(idAccount)
     , m_idUser(idUser)
     , m_fName(fName)
+    , m_avatarPixmap(avatarPixmap)
 {
     ui->setupUi(this);
     m_api->getBalance(m_idAccount);
     ui->stackedAccount->setCurrentWidget(ui->screenLogin);
 
     ui->labelLoginCardnumber->setText("Käyttäjä: " + m_fName);
+
+    m_avatarPreview = new QLabel(this);
+    m_avatarPreview->setGeometry(width() - 130, 10, 110, 110);
+    m_avatarPreview->setAlignment(Qt::AlignCenter);
+    m_avatarPreview->setStyleSheet("background:#ffffff; border:2px solid #c0c0c0; border-radius:10px;");
+    if (!m_avatarPixmap.isNull()) {
+        m_avatarPreview->setPixmap(m_avatarPixmap.scaled(m_avatarPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else {
+        QPixmap ph(100, 100);
+        ph.fill(QColor("#e9e9e9"));
+        m_avatarPreview->setPixmap(ph);
+    }
 
     tapahtumat = new logs(this);
     ui->tableTapahtumat->setModel(tapahtumat->getModel());
@@ -385,3 +398,14 @@ void account::keyPressEvent(QKeyEvent *event)
         // For all other keys and screens, use default dialog behavior
         QDialog::keyPressEvent(event);
     }
+
+void account::resizeEvent(QResizeEvent *event)
+{
+    QDialog::resizeEvent(event);
+    if (m_avatarPreview) {
+        m_avatarPreview->setGeometry(width() - 130, 10, 110, 110);
+        if (!m_avatarPixmap.isNull()) {
+            m_avatarPreview->setPixmap(m_avatarPixmap.scaled(m_avatarPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
+    }
+}
