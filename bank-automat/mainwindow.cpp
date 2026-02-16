@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
             }
             else {
             // Open the account selection window
-            accountSelectWindow = new accountselect(loginResult, api, nullptr);
+            accountSelectWindow = new accountselect(loginResult, api, inactivityTimer);
             accountSelectWindow->setAttribute(Qt::WA_DeleteOnClose);
             connect(accountSelectWindow, &QObject::destroyed, this, [this]() {
                 accountSelectWindow = nullptr;

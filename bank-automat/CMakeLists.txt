@@ -19,6 +19,7 @@ qt_add_executable(bank-automat
     images.qrc
     accountselect.h accountselect.cpp accountselect.ui
     account.h account.cpp account.ui
+    avatar.h avatar.cpp
     logevents.h logevents.cpp
     logs.h logs.cpp
     adminwindow.h adminwindow.cpp adminwindow.ui

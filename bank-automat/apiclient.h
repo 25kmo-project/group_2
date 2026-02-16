@@ -119,6 +119,11 @@ public:
 
     void getAdminLogs(int idAccount);
 
+    // Avatar API calls
+    void getPreselectedAvatars();
+    void uploadAvatar(const QString& userId, const QByteArray& fileData);
+    void selectPreselectedAvatar(const QString& userId, const QString& avatarId);
+
 signals:
     // Emitted when login succeeds and all required data is parsed
     void loginSucceeded(const LoginResultDto& result);
@@ -179,6 +184,11 @@ signals:
 
     // Emitted when all logs are received
     void adminLogsReceived(const QByteArray& adminLogs);
+
+    // Avatar signals
+    void preselectedAvatarsReceived(const QJsonArray& avatars);
+    void avatarUploadSucceeded(const QString& avatarUrl);
+    void avatarSelectSucceeded(const QString& avatarUrl);
 
     // Emitted whenever any API request fails
     void requestFailed(const ApiError& error);
