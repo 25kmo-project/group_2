@@ -22,7 +22,7 @@ The project demonstrates layered architecture, secure authentication, database t
 
 # Project Poster
 
-![Project Poster](./poster%20for%20Group%202.pdf)
+![Project Poster](poster.jpg)
 
 ## Table of Contents
 
