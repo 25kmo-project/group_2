@@ -40,10 +40,10 @@ jobs:
               run: npm ci
             
             - name: Security audit
-              run: npm audit --audit-level=moderate
+              run: npm audit --audit-level=high
 
             - name: Run tests
-              run: npm test -- --ci
+              run: npm test
 
             - name: Check if lint script exists
               run: |

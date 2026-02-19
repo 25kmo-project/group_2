@@ -99,6 +99,8 @@ CREATE TABLE `users` (
   `fname` varchar(45) DEFAULT NULL,
   `lname` varchar(45) DEFAULT NULL,
   `streetaddress` varchar(45) DEFAULT NULL,
+  `avatarUrl` varchar(512) DEFAULT NULL,
+  `avatarType` varchar(20) DEFAULT NULL,
   `role` varchar(20) DEFAULT 'user',
   PRIMARY KEY (`iduser`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

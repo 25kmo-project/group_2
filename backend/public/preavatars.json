@@ -1,0 +1,5 @@
+[
+  { "id": 1, "name": "Robot", "url": "/uploads/pre/robot.png" },
+  { "id": 2, "name": "Alien", "url": "/uploads/pre/alien.png" },
+  { "id": 3, "name": "Cat", "url": "/uploads/pre/cat.png" }
+]

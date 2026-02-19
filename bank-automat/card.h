@@ -16,5 +16,4 @@ public:
 
     static card mapJson(const QJsonObject &json);
 };
-
 #endif // CARD_H

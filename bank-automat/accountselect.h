@@ -9,9 +9,16 @@
 #define ACCOUNTSELECT_H
 
 #include "account.h"
+#include "avatar.h"
 //#include "adminwindow.h"
 #include <QDialog>
+#include <QLabel>
 #include <QMap>
+#include <QPixmap>
+#include <QPointer>
+#include <QPushButton>
+#include <QTimer>
+#include <QNetworkAccessManager>
 
 #include "apiclient.h"
 
@@ -29,10 +36,12 @@ class accountselect : public QDialog
     // Constructor
     // - loginResult: data returned from a successful login
     // - api: shared API client used for backend communication
+    // - inactivityTimer: global inactivity timer to prevent timeout during avatar selection
     // - parent: optional parent widget
     explicit accountselect(
         const LoginResultDto& loginResult,
         ApiClient* api,
+        QTimer* inactivityTimer = nullptr,
         QWidget *parent = nullptr
     );
     // Destructor
@@ -41,13 +50,15 @@ class accountselect : public QDialog
     protected:
     // Overridden paint event to allow custom background drawing
     void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
     
     private slots:
     // Slot called when the Debit button is clicked
     void on_btnSelectDebit_clicked();
     // Slot called when the Credit button is clicked
     void on_btnSelectCredit_clicked();
-    
+    // Slot called when the Edit Avatar button is clicked
+    void openAvatarDialog();
 
 private:
     // Pointer to the UI elements generated from accountselect.ui
@@ -58,6 +69,15 @@ private:
     // Login data containing user info and available accounts
     LoginResultDto m_login;
     
+    // Global inactivity timer (not owned, just referenced)
+    QTimer* m_inactivityTimer;
+    
+    // Avatar dialog shown before account selection
+    QPointer<avatar> avatarDialog = nullptr;
+    QLabel* m_avatarPreview = nullptr;
+    QPushButton* m_btnEditAvatar = nullptr;
+    QPixmap m_avatarPixmap;
+    
     // Currently selected account type ("debit" or "credit")
     QString selectedAccountType;
     // Maps account type strings ("debit", "credit") to account IDs
@@ -66,6 +86,11 @@ private:
     // Opens the main account window for the selected account
     void openAccountWindow();
     void openAdminWindow();
+    void setAvatarPreview(const QPixmap& pixmap);
+    void loadAvatarFromUrl(const QString& url);
+    void layoutHeaderControls();
+    
+    QNetworkAccessManager* m_avatarNam = nullptr;
 };
 
 #endif // ACCOUNTSELECT_H

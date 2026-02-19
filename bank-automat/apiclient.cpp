@@ -11,16 +11,50 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QNetworkReply>
+#include <QHttpMultiPart>
+#include <QHttpPart>
+#include <QBuffer>
+#include <QFile>
+#include <QTextStream>
+#include <functional>
+#include <memory>
 
 // ApiClient is a thin wrapper around QNetworkAccessManager for calling the backend API
 // It stores the base URL and the current JWT token, builds requests, sends JSON, parses JSON responses and emits high-level signals for the UI
 ApiClient::ApiClient(QObject* parent)
     : QObject(parent)
-    // Default backend address (local development)
-    //m_baseUrl(QUrl("http://127.0.0.1:3000"))
+    , m_baseUrl(QUrl("http://localhost:3000"))
 {
+    // Try to read backend URL from .env file first
+    QFile envFile("../.env");  // Relative to build directory
+    if (envFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream stream(&envFile);
+        while (!stream.atEnd()) {
+            QString line = stream.readLine().trimmed();
+            if (line.startsWith("DB_IP=")) {
+                QString db_url = line.mid(6);  // Remove "DB_IP=" prefix
+                if (!db_url.isEmpty()) {
+                    if (!db_url.startsWith("http://") && !db_url.startsWith("https://")) {
+                        db_url = "http://" + db_url;
+                    }
+                    m_baseUrl = QUrl(db_url);
+                    envFile.close();
+                    return;
+                }
+            }
+        }
+        envFile.close();
+    }
+
+    // Fallback: Try environment variable
     QString db_url = getEnvValue("DB_IP");
-    m_baseUrl = (QUrl(db_url));
+    if (!db_url.isEmpty()) {
+        // Ensure the URL has a protocol
+        if (!db_url.startsWith("http://") && !db_url.startsWith("https://")) {
+            db_url = "http://" + db_url;
+        }
+        m_baseUrl = QUrl(db_url);
+    }
 }
 
 
@@ -116,6 +150,8 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             out.token = o.value("token").toString();
             out.fName = o.value("fName").toString();
             out.role  = o.value("role").toString();
+            out.avatarUrl = o.value("avatarUrl").toString();
+            out.avatarType = o.value("avatarType").toString();
             if (out.token.isEmpty()) {
                 // Treat missing token as a server-side contract error
                 ApiError e;
@@ -251,6 +287,11 @@ void ApiClient::sendJson(const QString& method, const QString& path, const QJson
             emit PINUpdated(idFromPath);
         }
 
+        if (path == "/api/avatar/select/preselected" && method == "POST" && doc.isObject()) {
+            const QString avatarUrl = doc.object().value("avatar").toString();
+            emit avatarSelectSucceeded(avatarUrl);
+        }
+
         reply->deleteLater();
     });
 }
@@ -364,6 +405,10 @@ void ApiClient::sendNoBody(const QString& method, const QString& path)
             emit cardAccountReceived(cardAccount);
         }
 
+        if (path == "/api/avatars/preselected" && doc.isArray()) {
+            emit preselectedAvatarsReceived(doc.array());
+        }
+
         reply->deleteLater();
     });
 }
@@ -386,7 +431,9 @@ ApiError ApiClient::parseError(QNetworkReply* reply)
     if (pe.error == QJsonParseError::NoError && doc.isObject()) {
         const QJsonObject o = doc.object();
         const QString msg = o.value("message").toString();
+        const QString alt = o.value("error").toString();
         if (!msg.isEmpty()) e.message = msg;
+        else if (!alt.isEmpty()) e.message = alt;
     }
 
     if (e.message.isEmpty()) {
@@ -573,6 +620,159 @@ void ApiClient::getCardAccount(QString idCard)
 void ApiClient::getAdminLogs(int idAccount)
 {
     sendNoBody("GET", QString("/log/%1").arg(idAccount));
+}
+
+// Avatar API methods
+void ApiClient::getPreselectedAvatars()
+{
+    const QStringList paths = {"/api/avatars/preselected", "/avatars/preselected"};
+    auto tryPath = std::make_shared<std::function<void(int)>>();
+    *tryPath = [this, paths, tryPath](int index) {
+        if (index >= paths.size()) {
+            ApiError e;
+            e.httpStatus = 404;
+            e.message = "Avatar endpoint not found on server";
+            emit requestFailed(e);
+            return;
+        }
+
+        QNetworkRequest req = makeRequest(paths.at(index));
+        QNetworkReply* reply = m_nam.get(req);
+        connect(reply, &QNetworkReply::finished, this, [this, reply, index, paths, tryPath]() {
+            const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            const bool ok = (reply->error() == QNetworkReply::NoError) && status >= 200 && status < 300;
+
+            if (!ok && status == 404 && index + 1 < paths.size()) {
+                reply->deleteLater();
+                (*tryPath)(index + 1);
+                return;
+            }
+
+            if (!ok) {
+                emit requestFailed(parseError(reply));
+                reply->deleteLater();
+                return;
+            }
+
+            ApiError err;
+            QJsonDocument doc = readJson(reply, err);
+            if (!doc.isArray()) {
+                if (err.message.isEmpty()) err.message = "Invalid avatar list response";
+                emit requestFailed(err);
+            } else {
+                emit preselectedAvatarsReceived(doc.array());
+            }
+            reply->deleteLater();
+        });
+    };
+    (*tryPath)(0);
+}
+
+void ApiClient::uploadAvatar(const QString& userId, const QByteArray& fileData)
+{
+    const QStringList paths = {"/api/avatar/upload", "/avatar/upload"};
+    auto tryPath = std::make_shared<std::function<void(int)>>();
+    *tryPath = [this, paths, userId, fileData, tryPath](int index) {
+        if (index >= paths.size()) {
+            ApiError e;
+            e.httpStatus = 404;
+            e.message = "Avatar upload endpoint not found on server";
+            emit requestFailed(e);
+            return;
+        }
+
+        QUrl url(m_baseUrl);
+        url.setPath(paths.at(index));
+        QNetworkRequest req(url);
+        if (!m_token.isEmpty()) {
+            req.setRawHeader("Authorization", QByteArray("Bearer ") + m_token.toUtf8());
+        }
+
+        QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+        QHttpPart userIdPart;
+        userIdPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"userId\""));
+        userIdPart.setBody(userId.toUtf8());
+        multiPart->append(userIdPart);
+
+        QHttpPart filePart;
+        filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/png"));
+        filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"avatar\"; filename=\"avatar.png\""));
+        QBuffer* fileBuffer = new QBuffer(multiPart);
+        fileBuffer->setData(fileData);
+        fileBuffer->open(QIODevice::ReadOnly);
+        filePart.setBodyDevice(fileBuffer);
+        multiPart->append(filePart);
+
+        QNetworkReply* reply = m_nam.post(req, multiPart);
+        multiPart->setParent(reply);
+
+        connect(reply, &QNetworkReply::finished, this, [this, reply, index, paths, tryPath]() {
+            ApiError err;
+            QJsonDocument doc = readJson(reply, err);
+            const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            const bool ok = (reply->error() == QNetworkReply::NoError) && status >= 200 && status < 300;
+
+            if (!ok && status == 404 && index + 1 < paths.size()) {
+                reply->deleteLater();
+                (*tryPath)(index + 1);
+                return;
+            }
+
+            if (ok && doc.isObject()) {
+                const QString avatarUrl = doc.object()["avatar"].toString();
+                emit avatarUploadSucceeded(avatarUrl);
+            } else {
+                if (err.message.isEmpty()) err.message = "Failed to upload avatar";
+                if (err.httpStatus == 0) err.httpStatus = status;
+                emit requestFailed(err);
+            }
+            reply->deleteLater();
+        });
+    };
+    (*tryPath)(0);
+}
+
+void ApiClient::selectPreselectedAvatar(const QString& userId, const QString& avatarId)
+{
+    const QStringList paths = {"/api/avatar/select/preselected", "/avatar/select/preselected"};
+    const QByteArray payload = QJsonDocument(QJsonObject{{"userId", userId}, {"avatarId", avatarId}})
+                                   .toJson(QJsonDocument::Compact);
+
+    auto tryPath = std::make_shared<std::function<void(int)>>();
+    *tryPath = [this, paths, payload, tryPath](int index) {
+        if (index >= paths.size()) {
+            ApiError e;
+            e.httpStatus = 404;
+            e.message = "Avatar select endpoint not found on server";
+            emit requestFailed(e);
+            return;
+        }
+
+        QNetworkRequest req = makeRequest(paths.at(index));
+        QNetworkReply* reply = m_nam.post(req, payload);
+        connect(reply, &QNetworkReply::finished, this, [this, reply, index, paths, tryPath]() {
+            ApiError err;
+            QJsonDocument doc = readJson(reply, err);
+            const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            const bool ok = (reply->error() == QNetworkReply::NoError) && status >= 200 && status < 300;
+
+            if (!ok && status == 404 && index + 1 < paths.size()) {
+                reply->deleteLater();
+                (*tryPath)(index + 1);
+                return;
+            }
+
+            if (ok && doc.isObject()) {
+                emit avatarSelectSucceeded(doc.object().value("avatar").toString());
+            } else {
+                if (err.httpStatus == 0) err.httpStatus = status;
+                if (err.message.isEmpty()) err.message = "Failed to select avatar";
+                emit requestFailed(err);
+            }
+            reply->deleteLater();
+        });
+    };
+    (*tryPath)(0);
 }
 
 // POST /atm/{idAccount}/withdraw with { amount }

@@ -17,4 +17,6 @@ module.exports = {
     jwtSecret: process.env.JWT_SECRET || 'dev-secret',
     // PIN pepper - lisäturvallisuus kortin PIN-koodille
     pinPepper: process.env.PIN_PEPPER || '',
+    // Optional CDN base URL for serving public assets (no trailing slash)
+    cdnBase: process.env.CDN_BASE || process.env.PUBLIC_CDN || '',
 };

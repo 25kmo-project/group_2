@@ -1,7 +1,7 @@
 // Tämä tiedosto on backendin keskitetty virheenkäsittelijä
 
 // Tämä on Express error-handling middleware
-function errorHandler(err, req, res, next) {
+function errorHandler(err, req, res, _next) {
     // Tässä päätetään HTTP-statuskoodi
     const status = err.statusCode || 500;
     

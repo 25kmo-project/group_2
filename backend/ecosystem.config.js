@@ -2,6 +2,7 @@ module.exports = {
     apps: [{
         name: 'backend',
         script: './bin/www',
+        interpreter: '/home/ubuntu/.n/bin/node',
         instances: 1,
         autorestart: true,
         watch: false,
