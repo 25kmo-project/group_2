@@ -61,7 +61,7 @@ account::account(int idAccount, const QString& idUser, const QString& fName, Api
     ui->labelLoginCardnumber->setText("Käyttäjä: " + m_fName);
 
     m_avatarPreview = new QLabel(this);
-    m_avatarPreview->setGeometry(width() - 130, 10, 110, 110);
+    m_avatarPreview->setGeometry(width() - 120, 10, 110, 110);
     m_avatarPreview->setAlignment(Qt::AlignCenter);
     m_avatarPreview->setStyleSheet("background:#ffffff; border:2px solid #c0c0c0; border-radius:10px;");
     if (!m_avatarPixmap.isNull()) {
@@ -403,7 +403,7 @@ void account::resizeEvent(QResizeEvent *event)
 {
     QDialog::resizeEvent(event);
     if (m_avatarPreview) {
-        m_avatarPreview->setGeometry(width() - 130, 10, 110, 110);
+        m_avatarPreview->setGeometry(width() - 120, 10, 110, 110);
         if (!m_avatarPixmap.isNull()) {
             m_avatarPreview->setPixmap(m_avatarPixmap.scaled(m_avatarPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }

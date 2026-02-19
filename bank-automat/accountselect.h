@@ -16,6 +16,7 @@
 #include <QMap>
 #include <QPixmap>
 #include <QPointer>
+#include <QPushButton>
 #include <QTimer>
 #include <QNetworkAccessManager>
 
@@ -74,6 +75,7 @@ private:
     // Avatar dialog shown before account selection
     QPointer<avatar> avatarDialog = nullptr;
     QLabel* m_avatarPreview = nullptr;
+    QPushButton* m_btnEditAvatar = nullptr;
     QPixmap m_avatarPixmap;
     
     // Currently selected account type ("debit" or "credit")
@@ -86,6 +88,7 @@ private:
     void openAdminWindow();
     void setAvatarPreview(const QPixmap& pixmap);
     void loadAvatarFromUrl(const QString& url);
+    void layoutHeaderControls();
     
     QNetworkAccessManager* m_avatarNam = nullptr;
 };

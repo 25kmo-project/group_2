@@ -8,7 +8,6 @@
 #include "accountselect.h"
 #include "account.h"
 #include "avatar.h"
-#include "adminwindow.h"
 #include "ui_accountselect.h"
 #include <QPainter>
 #include <QPixmap>
@@ -16,6 +15,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <algorithm>
 
 // accountselect is a modal dialog shown after login, allowing the user to choose between Debit and Credit accounts
 accountselect::accountselect(
@@ -36,13 +36,13 @@ accountselect::accountselect(
     // Display the logged-in user's identifier
     ui->labelTest->setText("Käyttäjä: " + m_login.fName);
 
-    m_avatarPreview = new QLabel(this);
-    m_avatarPreview->setGeometry(width() - 110, 10, 96, 96);
+    m_avatarPreview = new QLabel(ui->card);
+    m_avatarPreview->setFixedSize(96, 96);
     m_avatarPreview->setAlignment(Qt::AlignCenter);
     m_avatarPreview->setStyleSheet("background:#ffffff; border:2px solid #c0c0c0; border-radius:8px;");
     QPixmap ph(92, 92);
     ph.fill(QColor("#e9e9e9"));
-    m_avatarPreview->setPixmap(ph);
+    m_avatarPreview->setPixmap(ph.scaled(m_avatarPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     
     // Initialize network manager for loading avatars
     m_avatarNam = new QNetworkAccessManager(this);
@@ -67,12 +67,14 @@ accountselect::accountselect(
     ui->btnSelectCredit->setVisible(hasCredit);
     
     // Add optional Edit Avatar button
-    QPushButton *btnEditAvatar = new QPushButton("Edit Avatar", this);
-    btnEditAvatar->setGeometry(10, 10, 120, 40);
-    btnEditAvatar->setStyleSheet(
+    m_btnEditAvatar = new QPushButton("Edit Avatar", ui->card);
+    m_btnEditAvatar->setFixedSize(120, 36);
+    m_btnEditAvatar->setStyleSheet(
         "background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold;"
     );
-    connect(btnEditAvatar, &QPushButton::clicked, this, &accountselect::openAvatarDialog);
+    connect(m_btnEditAvatar, &QPushButton::clicked, this, &accountselect::openAvatarDialog);
+
+    layoutHeaderControls();
     
     // Network manager already initialized above
 }
@@ -122,6 +124,10 @@ void accountselect::openAvatarDialog()
 // Opens the main account window based on the selected account type
 void accountselect::openAccountWindow()
 {
+    if (m_btnEditAvatar) {
+        m_btnEditAvatar->hide();
+    }
+
     // Resolve account ID from the selected type
     const int idAccount = accountIdByType.value(selectedAccountType, -1);
     if (idAccount < 0) return;
@@ -164,11 +170,34 @@ void accountselect::paintEvent(QPaintEvent *)
 void accountselect::resizeEvent(QResizeEvent *event)
 {
     QDialog::resizeEvent(event);
+    layoutHeaderControls();
+    if (m_avatarPreview && !m_avatarPixmap.isNull()) {
+        m_avatarPreview->setPixmap(m_avatarPixmap.scaled(m_avatarPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
+}
+
+void accountselect::layoutHeaderControls()
+{
+    if (!ui || !ui->titleLabel) return;
+
+    const QRect titleRect = ui->titleLabel->geometry();
+    const int gap = 12;
+    const int cardMidY = ui->card->height() / 2;
+
     if (m_avatarPreview) {
-        m_avatarPreview->setGeometry(width() - 110, 10, 96, 96);
-        if (!m_avatarPixmap.isNull()) {
-            m_avatarPreview->setPixmap(m_avatarPixmap.scaled(m_avatarPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        }
+        const int avatarX = std::max(0, titleRect.left() - gap - m_avatarPreview->width());
+        const int maxAvatarY = std::max(0, ui->card->height() - m_avatarPreview->height());
+         const int avatarY = std::clamp(cardMidY - (m_avatarPreview->height() / 2), 0, maxAvatarY);
+        m_avatarPreview->move(avatarX, avatarY);
+    }
+
+    if (m_btnEditAvatar) {
+        const int maxX = std::max(0, ui->card->width() - m_btnEditAvatar->width());
+        const int wantedX = titleRect.right() + gap;
+        const int buttonX = std::clamp(wantedX, 0, maxX);
+        const int maxButtonY = std::max(0, ui->card->height() - m_btnEditAvatar->height());
+        const int buttonY = std::clamp(cardMidY - (m_btnEditAvatar->height() / 2), 0, maxButtonY);
+        m_btnEditAvatar->move(buttonX, buttonY);
     }
 }
 
