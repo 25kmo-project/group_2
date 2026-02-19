@@ -3,10 +3,11 @@
 // Riippuvuuksien tuonti
 var express = require('express');
 var path = require('path');
+var fs = require('fs');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var swaggerUi = require('swagger-ui-express');
-var YAML = require('yamljs');
+var YAML = require('yaml');
 
 // Reittien tuonti
 var indexRouter = require('./routes/index');
@@ -43,7 +44,7 @@ app.use('/', avatarRouter);
 
 // Swagger UI
 const openapiPath = path.join(__dirname, 'openapi.yaml');
-const openapiDocument = YAML.load(openapiPath);
+const openapiDocument = YAML.parse(fs.readFileSync(openapiPath, 'utf8'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 openapiDocument.servers = [
     {

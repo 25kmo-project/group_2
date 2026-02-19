@@ -67,7 +67,7 @@ accountselect::accountselect(
     ui->btnSelectCredit->setVisible(hasCredit);
     
     // Add optional Edit Avatar button
-    m_btnEditAvatar = new QPushButton(""Vaihda \n profiilikuva"", ui->card);
+    m_btnEditAvatar = new QPushButton("Vaihda \n profiilikuva", ui->card);
     m_btnEditAvatar->setFixedSize(120, 36);
     m_btnEditAvatar->setStyleSheet(
         "background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold;"
